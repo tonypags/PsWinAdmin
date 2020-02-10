@@ -153,7 +153,8 @@ function Get-DsRegCmdStatus {
         # Ensure the parent folder exists
         $LogParent = Split-Path $OutLogPath -Parent
         if (-not (Test-Path $LogParent)) {
-            New-Item -ItemType Directory -Path $LogParent -Force
+            New-Item -ItemType Directory -Path $LogParent -Force | Out-Null
+            Write-Verbose "Created folder: $LogParent"
         }
         
         $Status | Out-File -FilePath $OutLogPath -Force
