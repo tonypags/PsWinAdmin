@@ -1,14 +1,29 @@
 function Get-DsRegCmdStatus {
+
     <#
     .SYNOPSIS
     Returns DSREGCMD status information as a PowerShell object.
     .DESCRIPTION
     Returns DSREGCMD status information as a PowerShell object, optionally from an existing output dump to text file.
+    .PARAMETER InLogPath
+    Runs a test on a previously created log file.
+    .PARAMETER OutLogPath
+    Export the result to a txt file.
+    .PARAMETER DefaultCase
+    Placeholder for parameter set, value has no effect on logic.
     .EXAMPLE
     Get-DsRegDcmStatus
+    
     Runs the Command live and parses its results.
     .EXAMPLE
+    (Get-DsRegCmdResult |
+        Where-Object {$_.'Device State'.AzureAdJoined -eq 'YES'}
+    ).'Tenant Details'.TenantName
+
+    Runs the Command live and returns only the Tenant Name.
+    .EXAMPLE
     Get-DsRegDcmStatus -InLogPath C:\temp\testout.txt
+    
     Parses previously captured results.
     .NOTES
     Command line help output, for reference:
@@ -22,24 +37,30 @@ function Get-DsRegCmdStatus {
              /debug : Displays debug messages
  
     #>
+    
     [CmdletBinding(DefaultParameterSetName='DefaultCase')]
     param (
+        
+        # Runs a test on a previously created log file.
         [Parameter(ParameterSetName='InLogPath',
             Position=0)]
         [AllowNull()]
         [string]
         $InLogPath,
 
+        # Export the result to a txt file.
         [Parameter(ParameterSetName='OutLogPath',
             Position=1)]
         [AllowNull()]
         [string]
         $OutLogPath,
 
+        # Placeholder for parameter set, value has no effect on logic.
         [Parameter(ParameterSetName='DefaultCase')]
         [AllowNull()]
         [string]
         $DefaultCase
+        
     )
         
     if ($InLogPath) {
