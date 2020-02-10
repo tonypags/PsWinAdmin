@@ -12,7 +12,7 @@ function Get-DsRegCmdStatus {
     .PARAMETER DefaultCase
     Placeholder for parameter set, value has no effect on logic.
     .EXAMPLE
-    Get-DsRegDcmStatus
+    Get-DsRegCmdStatus
     
     Runs the Command live and parses its results.
     .EXAMPLE
@@ -22,7 +22,7 @@ function Get-DsRegCmdStatus {
 
     Runs the Command live and returns only the Tenant Name.
     .EXAMPLE
-    Get-DsRegDcmStatus -InLogPath C:\temp\testout.txt
+    Get-DsRegCmdStatus -InLogPath C:\temp\testout.txt
     
     Parses previously captured results.
     .NOTES
@@ -164,5 +164,5 @@ function Get-DsRegCmdStatus {
     # Sned object to pipeline
     [pscustomobject]$OutputHash | Select-Object $ColumnOrder
 
-}# end function Get-DsRegDcmStatus
+}# end function Get-DsRegCmdStatus
 
