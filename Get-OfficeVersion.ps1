@@ -30,7 +30,7 @@ Function Get-OfficeVersion {
         Will return the locally installed Office product with all of the available properties
 #>
 
-    [CmdletBinding(SupportsShouldProcess=$true)]
+    [CmdletBinding()]
     [Alias('offver')]
     param(
         [Parameter(ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true, Position=0)]
