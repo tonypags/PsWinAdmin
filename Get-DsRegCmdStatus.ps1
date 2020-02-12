@@ -77,9 +77,9 @@ function Get-DsRegCmdStatus {
     $ptnSectionName = '\|\s([\w\s\d]+?)\s\s+?\|'  # Grab the heading name
     $ptnPropertyName = '\s*?(.+?)\s\:\s.*'        # Grab the property name
     $ptnPropertyValue = '\s+?[\w\s]+?\s\:\s(.*)$' # Grab the property value
-    $ptnEndOfSection = '\+----'                   # If a line starts with (+) it's a separatros, the end of a section
+    $ptnEndOfSection = '\+----'                   # If a line starts with (+) it's a separator, or the end of a section
 
-    # These will track the depth of the level 2 properties
+    # These will help track the progress of 1st level properties (sections)
     $CurrentSectionLine = 0
     $thisLine = $null
     $OutputHash = New-Object -TypeName System.Collections.Hashtable
@@ -101,7 +101,7 @@ function Get-DsRegCmdStatus {
             $thisHash = New-Object -TypeName System.Collections.Hashtable
             $thisColumnOrder = @()
             
-            # Next import a property name and value until we get a null line
+            # Next import a property name and value until we get to the 'end of section' line
             for ($j = $CurrentSectionLine; $thisLine -notmatch $ptnEndOfSection; $j++) {
                 
                 if ($thisLine.Trim()) {
@@ -112,7 +112,7 @@ function Get-DsRegCmdStatus {
                     $thisColumnOrder += $PropertyName
 
                     # Add these to the current hash
-                    #Write-Debug "About to add $PropertyName with value $PropertyValue"
+                    Write-Debug "About to add $PropertyName with value $PropertyValue"
                     $thisHash.Add($PropertyName, $PropertyValue)
                     $thisLine = $Status[$j+1]
 
@@ -125,14 +125,16 @@ function Get-DsRegCmdStatus {
                 } else {
 
                     $thisLine = $Status[$j+1]
-                    #Write-Debug "Found a null `$thisLine."
+                    Write-Debug "Found a null `$thisLine."
 
                 }
 
             }# end for ($j = $CurrentSectionLine; $thisLine -match $ptnPropertyLine; $j++)
+            
+            # Update $i value after the nested for loop moved further down the raw content of $Status using $j
             $i = $j
 
-            # Add the section and it's child to the output
+            # Add the completed section and its children as psobject to the output
             $OutputHash.Add($SectionName, (
                 [pscustomobject]$thisHash | Select-Object $thisColumnOrder
             ))
@@ -162,7 +164,7 @@ function Get-DsRegCmdStatus {
         
     }# end if ($OutLogPath)
 
-    # Sned object to pipeline
+    # Send object to pipeline
     [pscustomobject]$OutputHash | Select-Object $ColumnOrder
 
 }# end function Get-DsRegCmdStatus
