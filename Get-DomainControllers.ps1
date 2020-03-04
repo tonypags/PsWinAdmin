@@ -8,6 +8,10 @@ function Get-DomainControllers {
     Get-DomainControllers
     DC1
     DC2
+    .NOTES
+    netdom command is for servers only.
+    This is OK for this command for now, but future usage may require it work on Workstations. 
+    Build a new version of this function that will leverage ADSI commands.
     #>
 
     Try {
