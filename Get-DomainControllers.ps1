@@ -18,8 +18,8 @@ function Get-DomainControllers {
     } Catch {
 
         Write-Warning "Could not enumerate DC list."
-        Write-Warning "Make sure this device is a domain-joined device."
-        Exit 0
+        Write-Warning "Make sure this device is a domain controller."
+        break
 
     }
     
