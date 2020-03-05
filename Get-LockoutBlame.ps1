@@ -1,4 +1,4 @@
-function {
+function Get-LockoutBlame {
     <#
     .SYNOPSIS
     Gets a Windows Event about Locked Accounts.
