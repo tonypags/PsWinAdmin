@@ -45,6 +45,7 @@ function Find-PstFullName
                 }
                 Delimiter = ' '
                 Equater = ': '
+                ErrorAction = 'Stop'
             }
 
             # Add dates to formatting if requested
@@ -62,11 +63,20 @@ function Find-PstFullName
             }
 
             
+            $FindSplat = @{
+                Extension = 'PST'
+                ComputerName = $Computer
+                ErrorAction = 'Stop'
+            }
+            # Sometimes CIM commands error out on the local device.
+            if ($env:COMPUTERNAME -eq $Computer) {
+                $FindSplat.Remove('ComputerName')
+            }
             # Find the files and format the output
             Try {
                 [string[]]$strSearchResult = 
-                    Find-FileByExtension 'PST' -ComputerName $Computer -ea Stop |
-                        Format-ObjectToString @FormatSplat -ea Stop
+                    Find-FileByExtension @FindSplat |
+                        Format-ObjectToString @FormatSplat
             } Catch {
                 throw (Terminating Error: $($_.Exception.Message)) -ea Stop
             }
