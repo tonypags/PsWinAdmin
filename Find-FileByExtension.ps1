@@ -32,7 +32,7 @@ function Find-FileByExtension
             Write-Verbose "Searching for $($Extension.Trim('.')) files under all local disks on $($Computer)"
 
             Foreach ($Disk in (Get-CimLocalDisk).DeviceID) {
-                Get-ChildItem $Disk -Filter "*$($Extension)" -Force -Recurse -ea 0
+                Get-ChildItem "$($Disk)\" -Filter "*$($Extension)" -Force -Recurse -ea 0
             }
 
         }
