@@ -78,7 +78,7 @@ function Find-PstFullName
                     Find-FileByExtension @FindSplat |
                         Format-ObjectToString @FormatSplat
             } Catch {
-                throw (Terminating Error: $($_.Exception.Message)) -ea Stop
+                throw (Terminating Error: $($_.Exception.Message))
             }
 
             # Build the final output string(s) for this computer
