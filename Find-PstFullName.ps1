@@ -63,9 +63,13 @@ function Find-PstFullName
 
             
             # Find the files and format the output
-            [string[]]$strSearchResult = 
-                Find-FileByExtension 'PST' -ComputerName $Computer |
-                    Format-ObjectToString @FormatSplat
+            Try {
+                [string[]]$strSearchResult = 
+                    Find-FileByExtension 'PST' -ComputerName $Computer -ea Stop |
+                        Format-ObjectToString @FormatSplat -ea Stop
+            } Catch {
+                throw (Terminating Error: $($_.Exception.Message)) -ea Stop
+            }
 
             # Build the final output string(s) for this computer
             if ($strSearchResult) {
