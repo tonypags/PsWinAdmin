@@ -63,7 +63,7 @@ function Format-ObjectToString
         Foreach ($object in $InputObject) {
 
             # Build a string
-            [string]$thisResultantString = ''
+            [string[]]$thisResultantString = @()
 
             # The user may have elected to choose a name-less value to be first.
             if ($Format.Keys -contains '~') {
