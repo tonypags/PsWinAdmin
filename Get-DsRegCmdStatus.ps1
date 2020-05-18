@@ -17,7 +17,7 @@ function Get-DsRegCmdStatus {
     
     Runs the Command live and parses its results.
     .EXAMPLE
-    (Get-DsRegCmdResult |
+    (Get-DsRegCmdStatus |
         Where-Object {$_.'Device State'.AzureAdJoined -eq 'YES'}
     ).'Tenant Details'.TenantName
 
