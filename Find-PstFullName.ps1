@@ -61,25 +61,16 @@ function Find-PstFullName
                 $NothingFoundMessage = $NothingFoundMessage +
                     "$($NowDateLabel): $($Now.ToString($strDateFormat))"
             }
-
             
+            # Find the files and format the output            
             $FindSplat = @{
-                Extension = 'PST'
                 ComputerName = $Computer
+                Extension = 'PST'
                 ErrorAction = 'Stop'
             }
-            # Sometimes CIM commands error out on the local device.
-            if ($env:COMPUTERNAME -eq $Computer) {
-                $FindSplat.Remove('ComputerName')
-            }
-            # Find the files and format the output
-            Try {
-                [string[]]$strSearchResult = 
-                    Find-FileByExtension @FindSplat |
-                        Format-ObjectToString @FormatSplat
-            } Catch {
-                throw (Terminating Error: $($_.Exception.Message))
-            }
+            [string[]]$strSearchResult = 
+                Find-FileByExtension @FindSplat |
+                    Format-ObjectToString @FormatSplat
 
             # Build the final output string(s) for this computer
             if ($strSearchResult) {

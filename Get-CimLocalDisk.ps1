@@ -15,13 +15,26 @@ function Get-CimLocalDisk
     Foreach ($Computer in $ComputerName) {
 
         $cimSplat = @{
-            ComputerName = $Computer
             Namespace = 'root/cimv2'
             Class = 'win32_logicaldisk'
             Filter = "DriveType='3'"
+            ErrorAction = 'Stop'
         }    
 
-        Get-CimInstance @cimSplat
+        # Add computername if not this computer
+        if (@($env:COMPUTERNAME,'localhost') -notcontains $Computer) {
+            $cimSplat.Add('ComputerName',$Computer)
+        }
+
+        Try {
+            Get-CimInstance @cimSplat
+        } Catch {
+            Try {
+                Get-WmiObject @cimSplat
+            } Catch {
+                Throw "Data Collection Failed: $($_.Exception.Message)"
+            }
+        }
 
     }
 }
