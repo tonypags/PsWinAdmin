@@ -52,7 +52,7 @@ Function Get-InstalledSoftware {
         $cuReg = [Microsoft.Win32.RegistryHive]::CurrentUser
     }
     Process{
-        if (!(Test-Connection -ComputerName $Name -count 1 -quiet)) {
+        if ( ($Name -ne $env:COMPUTERNAME) -and ( -not (Test-Connection -ComputerName $Name -count 1 -quiet))) {
             Write-Error -Message "Unable to contact $Name. Please verify its network connectivity and try again." -Category ObjectNotFound -TargetObject $Computer
             Break
         }
