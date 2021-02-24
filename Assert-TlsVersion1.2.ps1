@@ -67,6 +67,7 @@ function Assert-TlsVersion1.2 {
     if ($intTlsDisabledByDefault -ne 0) {
 
         $regTlsDisabledByDefault = $item | Set-ItemProperty -Name 'DisabledByDefault' -Value 0
+        [int]$intTlsDisabledByDefault = $regTlsDisabledByDefault.DisabledByDefault
 
         # Finally, check it again
         if ($intTlsDisabledByDefault -ne 0) {
@@ -78,6 +79,7 @@ function Assert-TlsVersion1.2 {
     if ($intTlsEnabled -ne 1) {
 
         $regTlsEnabled = $item | Set-ItemProperty -Name 'Enabled' -Value 1
+        [int]$intTlsEnabled = $regTlsEnabled.Enabled
 
         # Finally, check it again
         if ($intTlsEnabled -ne 1) {
