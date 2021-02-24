@@ -31,8 +31,8 @@ function Assert-TlsVersion1.2 {
 
 
     # Gather current settings if they exist
-    $regTlsDisabledByDefault = ($item | Get-ItemProperty -Name 'DisabledByDefault' -ea 0)#    0 -eq 0
-    $regTlsEnabled = ($item | Get-ItemProperty -Name 'Enabled' -ea 0)#1 -eq 1
+    $regTlsDisabledByDefault = $item | Get-ItemProperty -Name 'DisabledByDefault' -ea 0
+    $regTlsEnabled = $item | Get-ItemProperty -Name 'Enabled' -ea 0
 
 
     # Retrieve the values using conditionals
@@ -66,7 +66,8 @@ function Assert-TlsVersion1.2 {
     # Assert the required values
     if ($intTlsDisabledByDefault -ne 0) {
 
-        $regTlsDisabledByDefault = $item | Set-ItemProperty -Name 'DisabledByDefault' -Value 0
+        $item | Set-ItemProperty -Name 'DisabledByDefault' -Value 0
+        $regTlsDisabledByDefault = $item | Get-ItemProperty -Name 'DisabledByDefault' -ea 0
         [int]$intTlsDisabledByDefault = $regTlsDisabledByDefault.DisabledByDefault
 
         # Finally, check it again
@@ -78,11 +79,13 @@ function Assert-TlsVersion1.2 {
 
     if ($intTlsEnabled -ne 1) {
 
-        $regTlsEnabled = $item | Set-ItemProperty -Name 'Enabled' -Value 1
+        $item | Set-ItemProperty -Name 'Enabled' -Value 1
+        $regTlsEnabled = $item | Get-ItemProperty -Name 'Enabled' -ea 0
         [int]$intTlsEnabled = $regTlsEnabled.Enabled
 
         # Finally, check it again
         if ($intTlsEnabled -ne 1) {
+            Write-Debug "enabled: `$intTlsEnabled , `$regTlsEnabled"
             Write-Error "'Enabled' value could not be set!"
         }
 
