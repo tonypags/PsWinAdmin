@@ -1,6 +1,6 @@
 function Assert-TlsVersion1.2 {
 
-    [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Low')]
+    [CmdletBinding()]
 
     param()
     
@@ -19,9 +19,7 @@ function Assert-TlsVersion1.2 {
 
     } Catch [System.Management.Automation.ItemNotFoundException] {
         
-        if ($PSCmdlet.ShouldProcess($Key, 'Create registry key.')) {
-            $item = New-Item -ItemType Directory -Path $Key -Force -ea 0 -ev errItem
-        }
+        $item = New-Item -ItemType Directory -Path $Key -Force -ea 0 -ev errItem
 
     } Finally {
         
@@ -46,12 +44,8 @@ function Assert-TlsVersion1.2 {
     } else {
         
         # Create the DisabledByDefault setting if it does not exist
-        if ($PSCmdlet.ShouldProcess('DisabledByDefault', 'Create registry value and set to 0.')) {
-
-            $regTlsDisabledByDefault = $item | New-ItemProperty -Name 'DisabledByDefault' -Value 0
-            [int]$intTlsDisabledByDefault = $regTlsDisabledByDefault.DisabledByDefault
-
-        }
+        $regTlsDisabledByDefault = $item | New-ItemProperty -Name 'DisabledByDefault' -Value 0
+        [int]$intTlsDisabledByDefault = $regTlsDisabledByDefault.DisabledByDefault
 
     }#END:  if ($regTlsDisabledByDefault)
 
@@ -63,12 +57,8 @@ function Assert-TlsVersion1.2 {
     } else {
         
         # Create the Enabled setting if it does not exist
-        if ($PSCmdlet.ShouldProcess('Enabled', 'Create registry value and set to 1.')) {
-            
-            $regTlsEnabled = $item | New-ItemProperty -Name 'Enabled' -Value 1
-            [int]$intTlsEnabled = $regTlsEnabled.Enabled
-
-        }
+        $regTlsEnabled = $item | New-ItemProperty -Name 'Enabled' -Value 1
+        [int]$intTlsEnabled = $regTlsEnabled.Enabled
 
     }#END:  if ($regTlsEnabled)
 
@@ -76,9 +66,7 @@ function Assert-TlsVersion1.2 {
     # Assert the required values
     if ($intTlsDisabledByDefault -ne 0) {
 
-        if ($PSCmdlet.ShouldProcess('DisabledByDefault', 'Set registry value to 0.')) {
-            $regTlsDisabledByDefault = $item | Set-ItemProperty -Name 'DisabledByDefault' -Value 0
-        }
+        $regTlsDisabledByDefault = $item | Set-ItemProperty -Name 'DisabledByDefault' -Value 0
 
         # Finally, check it again
         if ($intTlsDisabledByDefault -ne 0) {
@@ -89,9 +77,7 @@ function Assert-TlsVersion1.2 {
 
     if ($intTlsEnabled -ne 1) {
 
-        if ($PSCmdlet.ShouldProcess('Enabled', 'Set registry value to 1.')) {
-            $regTlsEnabled = $item | Set-ItemProperty -Name 'Enabled' -Value 1
-        }
+        $regTlsEnabled = $item | Set-ItemProperty -Name 'Enabled' -Value 1
 
         # Finally, check it again
         if ($intTlsEnabled -ne 1) {
