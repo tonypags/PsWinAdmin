@@ -5,7 +5,7 @@ function Assert-TlsVersion1.2 {
     param()
     
     # Ensure we are running as an admin
-    $vMsg = "$(strDate) Testing current session to ensure we are running as admin."
+    $vMsg = "Testing current session to ensure we are running as admin."
     Write-Verbose $vMsg
     Write-Debug $vMsg
     Confirm-RequiresAdmin
