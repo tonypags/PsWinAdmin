@@ -21,3 +21,7 @@ $strAppName = '*application*name*partial*';[Net.ServicePointManager]::SecurityPr
 [Net.ServicePointManager]::SecurityProtocol=[enum]::GetNames([Net.SecurityProtocolType])|Foreach-Object{[Net.SecurityProtocolType]::$_};$web=(New-Object Net.WebClient);@('Confirm-RequiresAdmin','Assert-TlsVersion1.2') | %{$web.DownloadString("https://raw.githubusercontent.com/tonypags/PsWinAdmin/master/$($_).ps1")|iex; iex "$_"}
 ```
 
+## Find Events around the time of the last reboot
+```
+$LogName='System';[Net.ServicePointManager]::SecurityProtocol=[enum]::GetNames([Net.SecurityProtocolType])|Foreach-Object{[Net.SecurityProtocolType]::$_};(New-Object Net.WebClient).DownloadString( 'https://raw.githubusercontent.com/tonypags/PsWinAdmin/master/Get-RebootReport.ps1' )| iex;$LastRebootTime = (Get-RebootReport)[0].Date;$FilterHashtable = @{LogName=$LogName;EndTime=($LastRebootTime.AddMinutes(5));StartTime=($LastRebootTime.AddMinutes(-60));};Get-WinEvent -FilterHashtable $FilterHashtable| sort TimeCreated |ft TimeCreated, ProviderName, Message -a -wrap;
+```
