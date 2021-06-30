@@ -3,7 +3,10 @@ function Remove-FilePastRetention {
     .SYNOPSIS
     Removes old files by date, as specified in a confg file.
     .PARAMETER ConfigPath
-    This file must contain a hash table for all paths (KEY=pathToParentFolder, VALUE=retentionInDays)
+    This file must contain a hash table for all paths
+    (KEY=pathToParentFolder, VALUE=retentionInDays)
+    .PARAMETER ConfigPath
+    Remove all items matching the config in all subfolders
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
@@ -55,9 +58,16 @@ function Remove-FilePastRetention {
             Where-Object {$_.LastWriteTime -lt $Now.AddDays(-$ret)}
 
         # Action files
+        $props = @{
+            Recurse = $Recurse
+            Force = $true
+            WhatIf = $WhatIfPreference
+            Verbose = $VerbosePreference
+        }
         Write-Debug "`$FilesToDelete & `$Path & `$ret variables populated."
-        Write-Verbose "Deleting files older than $($ret) days under $($Path)."
-        $FilesToDelete | Remove-Item -Recurse:$Recurse -Force
+        Write-Verbose "Deleting $(@($FilesToDelete).count
+            ) files older than $($ret) days under $($Path)."
+        $FilesToDelete | Remove-Item @props
     
     }
 
