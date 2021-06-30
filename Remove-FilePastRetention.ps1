@@ -10,7 +10,12 @@ function Remove-FilePastRetention {
         # Path to the config file
         [Parameter()]
         [string]
-        $ConfigPath = (Join-Path $PSScriptRoot 'retention.cfg.psd1')
+        $ConfigPath = (Join-Path $PSScriptRoot 'retention.cfg.psd1'),
+
+        # Remove all items matching the config in all subfolders
+        [Parameter()]
+        [switch]
+        $Recurse
     )
 
     Confirm-RequiresAdmin
@@ -50,7 +55,7 @@ function Remove-FilePastRetention {
 
         Write-Debug "`$FilesToDelete & `$Path variables populated."
         Write-Verbose "Deleting files older than $($ret) days under $($Path)."
-        $FilesToDelete | Remove-Item -Force
+        $FilesToDelete | Remove-Item -Recurse:$Recurse -Force
     
     }
 
