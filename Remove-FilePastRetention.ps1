@@ -23,6 +23,7 @@ function Remove-FilePastRetention {
     # Define a hashtable for all tasks (KEY=pathToParentFolder, VALUE=retentionInDays)
     Try {
         $content = Get-Content -Path $ConfigPath -Raw -ErrorAction Stop
+        Write-Verbose "Content being parsed from config file: [$($ConfigPath)]."
         $scriptBlock = [scriptblock]::Create($content)
         $scriptBlock.CheckRestrictedLanguage([string[]]@(), [string[]]@(), $false)
         $Tasks = (& $scriptBlock)
@@ -41,19 +42,20 @@ function Remove-FilePastRetention {
 
     $Now = Get-Date
 
-    # Loop thru each show and remove items
+    # Loop thru each path and remove items
     Foreach ($task in @($Tasks.Keys)) {
 
         $ret = $Tasks[$task]
         $Path = $task
 
-        # Look for video files 
+        # Find files 
         $FilesToDelete = @()
+        Write-Verbose "Finding files older than $($ret) days under $($Path)."
         $FilesToDelete += Get-ChildItem $Path -File -Recurse |
-            Where-Object {$_.LastWriteTime -lt $Now.AddDays(-$ret)} |
-            Where-Object {$Ext -contains $_.Extension}
+            Where-Object {$_.LastWriteTime -lt $Now.AddDays(-$ret)}
 
-        Write-Debug "`$FilesToDelete & `$Path variables populated."
+        # Action files
+        Write-Debug "`$FilesToDelete & `$Path & `$ret variables populated."
         Write-Verbose "Deleting files older than $($ret) days under $($Path)."
         $FilesToDelete | Remove-Item -Recurse:$Recurse -Force
     
