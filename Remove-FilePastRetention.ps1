@@ -65,9 +65,15 @@ function Remove-FilePastRetention {
             Verbose = $VerbosePreference
         }
         Write-Debug "`$FilesToDelete & `$Path & `$ret variables populated."
-        Write-Verbose "Deleting $(@($FilesToDelete).count
-            ) files older than $($ret) days under $($Path)."
-        $FilesToDelete | Remove-Item @props
+        if ($FilesToDelete) {
+
+            Write-Verbose "Deleting $(@($FilesToDelete).count
+                ) files older than $($ret) days under $($Path)."
+            $FilesToDelete | Remove-Item @props
+
+        } else {
+            Write-Verbose "No files older than $($ret) days under $($Path)."
+        }
     
     }
 
