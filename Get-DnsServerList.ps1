@@ -126,8 +126,11 @@ function Get-DnsServerList {
 
             Get-DnsClientServerAddress @dnsProps |
                 Select-Object $ColumnOrder
-        
-            $CimSession | Remove-CimSession -Confirm:$false
+    
+            if ($CimSession) {
+                $CimSession | Remove-CimSession -Confirm:$false
+                Remove-Variable 'CimSession'
+            }
 
         }#END: foreach ($Computer in $ComputerName) {}
     
