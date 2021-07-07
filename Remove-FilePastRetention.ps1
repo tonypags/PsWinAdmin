@@ -25,11 +25,8 @@ function Remove-FilePastRetention {
 
     # Define a hashtable for all tasks (KEY=pathToParentFolder, VALUE=retentionInDays)
     Try {
-        $content = Get-Content -Path $ConfigPath -Raw -ErrorAction Stop
         Write-Verbose "Content being parsed from config file: [$($ConfigPath)]."
-        $scriptBlock = [scriptblock]::Create($content)
-        $scriptBlock.CheckRestrictedLanguage([string[]]@(), [string[]]@(), $false)
-        $Tasks = (& $scriptBlock)
+        $Tasks = Get-Content -Path $ConfigPath -Raw -ErrorAction Stop | ConvertTo-HashTable
     } Catch {
         Write-Warning "File Missing: [$($ConfigPath)]"
         Write-Warning "Try running the New-RetentionConfig function"
