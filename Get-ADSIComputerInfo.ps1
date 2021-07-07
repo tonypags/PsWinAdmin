@@ -1,24 +1,58 @@
 ﻿function Get-ADSIComputerInfo {
-
     <#
     .SYNOPSIS
-    Retrieves computer objects from Active Directory.
+    Retrieves computer objects from Active Directory using ADSI.
     .DESCRIPTION
-    Retrieves all enabled domain computer objects from Active Directory without using the ActiveDirectory module.
+    Retrieves all enabled domain computer objects from Active Directory without
+    using the ActiveDirectory module.
+    .EXAMPLE
+    $sv = Get-ADSIComputerInfo -OsType 'Windows Server'
+    .EXAMPLE
+    $ad = Get-ADSIComputerInfo -Verbose
     #>
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        [ValidateSet(
+            'Windows Server',
+            'CentOS',
+            'All'
+        )]
+        [string]
+        $OsType='All',
 
-    $ErrorActionPreference = 'SilentlyContinue'
-    $VerbosePreference = 'Continue'
+        [Parameter()]
+        [switch]
+        $IncludeDisabled
+    )
 
     Write-Verbose "$((Get-Date).ToLongTimeString()):  Finding enabled AD computers..."
     # Build the AD object with all computer objects found
     $adsi = $null
     $adsi = [adsisearcher]"objectcategory=computer"
+
     # To return only the enabled computer objects, use '!userAccountControl:1.2.840.113556.1.4.803:=2'
-    $adsi.filter = "(&(objectClass=Computer)(!userAccountControl:1.2.840.113556.1.4.803:=2))"
-    $EnabledADComputerADSI = $adsi.FindAll()
-    $EnabledADComputer = Foreach ($E in $EnabledADComputerADSI){
-        $obj = $E.Properties
+    [string[]]$filters = $null
+    $filters += 'objectClass=Computer'
+    if ($IncludeDisabled) {} else {$filters += '!userAccountControl:1.2.840.113556.1.4.803:=2'}
+    if ($OsType -eq 'All') {
+        # Do nothing
+    } elseif ($OsType -eq 'Windows Server') {
+        $filters += 'operatingsystem=*server*'
+        $filters += 'operatingsystem=*Windows*'
+    } elseif ($OsType -eq 'CentOS') {
+        $filters += 'operatingsystem=*CentOS*'
+    }
+    $adsi.filter = if ($filters.count -eq 1) {
+        "($($filters))"
+    } else {
+        "(&{0})" -f (
+            ($filters | ForEach-Object {"($($_))"}) -join ''
+        )
+    }
+    $ComputerADSI = $adsi.FindAll()
+    $Result = Foreach ($C in $ComputerADSI){
+        $obj = $C.Properties
         $props = @{
             Computer    = [string]$obj.name
             OSName      = [string]$obj.operatingsystem -replace 
@@ -39,6 +73,6 @@
         }
         New-Object -TypeName PSObject -Property $props
     }
-    Write-Verbose "$((Get-Date).ToLongTimeString()):  $($EnabledADComputer.count) objects returned from ADSI search"
-    Write-Output $EnabledADComputer
+    Write-Verbose "$((Get-Date).ToLongTimeString()):  $(@($Result).count) objects returned from ADSI search"
+    Write-Output $Result
 }
