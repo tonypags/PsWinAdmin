@@ -37,6 +37,17 @@ function Get-DnsServerList {
     ServerName InterfaceAlias ServerAddresses
     ---------- -------------- ---------------
     PC2        Ethernet       {10.10.2.12, 4.2.2.2}
+    .EXAMPLE
+    Get a list of servers from AD and then pull their DNS info.
+
+    PS > $sv = Get-ADSIComputerInfo -OsType 'Windows Server'
+    PS > $rpt = Get-DnsServerList -ComputerName ($sv.Computer)
+    PS > $rpt[48,99]
+
+    ServerName  InterfaceAlias ServerAddresses
+    ----------  -------------- ---------------
+    PRDVWSWHA02 Ethernet0      {10.202.102.150, 10.6.1.55, 10.207.100.150}
+    halas       Ethernet       {10.202.102.150, 10.6.1.55, 10.207.100.150}
     #>
     [CmdletBinding()]
     param (
@@ -119,7 +130,7 @@ function Get-DnsServerList {
             }#END: if ($Computer -eq $env:COMPUTERNAME) {}
 
             # Find the correct adapter
-            $InterfaceIndex = (Get-NetAdapter @netProps).Where({
+            $InterfaceIndex = @(Get-NetAdapter @netProps).Where({
                 $_.Status -eq 'Up'
             }).ifIndex | Sort-Object | Select-Object -First 1
             $dnsProps.Add('InterfaceIndex',$InterfaceIndex)
