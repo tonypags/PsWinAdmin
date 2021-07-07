@@ -77,6 +77,7 @@ function Get-ADSIComputerInfo {
     Write-Output $Result
 }
 
+
 function Get-DnsServerList {
     <#
     .SYNOPSIS
@@ -172,6 +173,20 @@ function Get-DnsServerList {
 
         )
 
+        $dnsSplat = @{
+            Name = $null
+            Type = 'A'
+            NoHostsFile = $true
+            ErrorAction = 'SilentlyContinue'
+        }
+
+        $CleanUp = {
+            if ($CimSession) {
+                $CimSession | Remove-CimSession -Confirm:$false
+                Remove-Variable 'CimSession'
+            }
+        }
+
     }
 
     process {
@@ -184,6 +199,7 @@ function Get-DnsServerList {
 
             $netProps = @{
                 Physical = $true
+                ErrorAction = 'Stop'
             }
 
             # Are we attempting to connect to a remote device?
@@ -191,48 +207,76 @@ function Get-DnsServerList {
                 # do nothing
             } else {
 
-                $thisDNS = (Resolve-DnsName halas -Type A -NoHostsFile).Where(
+                $dnsSplat.Set_Item('Name',$Computer)
+                $thisDNS = (Resolve-DnsName @dnsSplat).Where(
                     {$_ -is [Microsoft.DnsClient.Commands.DnsRecord_A]}
                 ).Where(
                     {$_.Name -like "$($Computer)*"}
                 )
 
-                if (Test-Connection -ComputerName $thisDNS.IPAddress -Count 2 -Quiet) {
+                if ($thisDNS.IPAddress) {
 
-                    Try {
-                    
-                        $cimProps = @{
-                            ComputerName = $Computer
-                            Credential = $Credential
-                            ErrorAction = 'Stop'
-                        }
-                        $CimSession = New-CimSession @cimProps
-    
-                        $dnsProps.Add('CimSession',$CimSession)
-                        $netProps.Add('CimSession',$CimSession)
-                        Write-Verbose "Connected to CimSession on $(
-                            $Computer
-                        )"
-    
-                    } Catch {
-                    
-                        Write-Warning "Could not connect to $(
-                            $Computer
-                        ): $(
-                            $Error[0].Exception.Message
-                        )"
+                    if (Test-Connection -ComputerName $thisDNS.IPAddress -Count 2 -Quiet) {
                         
-                        # Skip check since no connection
+                        Try {
+                            
+                            $cimProps = @{
+                                ComputerName = $Computer
+                                Credential = $Credential
+                                ErrorAction = 'Stop'
+                            }
+                            $CimSession = New-CimSession @cimProps
+                            
+                            $dnsProps.Add('CimSession',$CimSession)
+                            $netProps.Add('CimSession',$CimSession)
+                            Write-Verbose "Connected to CimSession on $(
+                                $Computer
+                            )"
+                                
+                        } Catch {
+                            
+                            Write-Warning "Could not connect to $(
+                                $Computer
+                            ) [CIM]: $(
+                                $Error[0].Exception.Message
+                            )"
+                            continue
+                                    
+                        }#END: Try {}
+                                    
+                    } else {
+                        
+                        Write-Warning "$($Computer
+                            ) is not responding to a ping"
                         continue
-    
-                    }#END: Try {}
-                
-                }#END: if (Test-Connection -Computer...-Quiet) {}
+                        
+                    }#END: if (Test-Connection -Computer...-Quiet) {}
+                                
+                } else {
+
+                    Write-Warning "$($Computer
+                        ) does not resolve to an IP Address"
+                    continue
+
+                }#END: if ($thisDNS.IPAddress) {}
 
             }#END: if ($Computer -eq $env:COMPUTERNAME) {}
 
             # Find the correct adapter
-            $InterfaceIndex = @(Get-NetAdapter @netProps).Where({
+            Try {
+
+                $Adapters = Get-NetAdapter @netProps
+
+            } Catch {
+
+                if ($_ -like '*cannot find the resource identified*') {
+                    $CleanUp
+                    Write-Warning "$($Error[0].Exception.Message)"
+                    throw "$($Computer)'s adapter was not found!"
+                }
+
+            }
+            $InterfaceIndex = @($Adapters).Where({
                 $_.Status -eq 'Up'
             }).ifIndex | Sort-Object | Select-Object -First 1
             $dnsProps.Add('InterfaceIndex',$InterfaceIndex)
@@ -240,10 +284,7 @@ function Get-DnsServerList {
             Get-DnsClientServerAddress @dnsProps |
                 Select-Object $ColumnOrder
     
-            if ($CimSession) {
-                $CimSession | Remove-CimSession -Confirm:$false
-                Remove-Variable 'CimSession'
-            }
+            $CleanUp
 
         }#END: foreach ($Computer in $ComputerName) {}
     
@@ -251,8 +292,41 @@ function Get-DnsServerList {
 
 }#END: function Get-DnsServerList {}
 
-$sv = Get-ADSIComputerInfo -OsType 'Windows Server'
-$rpt = Get-DnsServerList -ComputerName ($sv.Computer) -Verbose
+
+
+<# I am attempting to pull a computer list from AD
+
+#### creds #####
+$path = 'C:\Users\solarwindsops\Documents\WindowsPowerShell\Credentials\solarwindsops@nfl.net.xml'
+$SWOPScreds = Import-CliXml $path
+#### creds #####
+
+$domainreturn = Get-ADDomain 'nfl.net' -Credential $SWOPScreds
+# ^ can't run this locally
+
+
+
+
+
+if($domainreturn){}else{
+    throw "Input does not appear to be a Domain"
+}
+$pdc = Get-ADForest -Credential $SWOPScreds |
+    Select-Object -ExpandProperty rootdomain |
+    Get-ADDomain |
+    Select-Object -ExpandProperty PDCEmulator -Unique
+$nflroot = New-PSSession -Computername $pdc -Credential $SWOPScreds
+$filter = 'operatingsystem="*server*" AND enabled="True"'
+$sv = Invoke-Command -Session $nflroot -ScriptBlock {Get-AdComputer -f $filter}
+$sv.count
+
+#>
+
+
+# $sv = Get-ADSIComputerInfo -OsType 'Windows Server'
+$sv = Get-Content 'c:\temp\servers.txt'
+# $rpt = Get-DnsServerList -ComputerName ($sv.Computer) -Verbose
+$rpt = Get-DnsServerList -ComputerName $sv -Verbose
 Write-Host ''
 Write-Host "Out of $(@($sv).count) total servers, $(@($rpt).count) returned DNS info."
 Write-Host '$sv = total servers (AD)'
