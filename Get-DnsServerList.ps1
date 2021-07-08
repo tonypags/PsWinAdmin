@@ -101,9 +101,10 @@ function Get-DnsServerList {
         }
 
         $CleanUp = {
+            param($CimSession)
             if ($CimSession) {
                 $CimSession | Remove-CimSession -Confirm:$false
-                Remove-Variable 'CimSession'
+                Remove-Variable 'CimSession' -Scope 'Global'
             }
         }
 
@@ -115,10 +116,6 @@ function Get-DnsServerList {
 
             $dnsProps = @{
                 AddressFamily = $AddressFamily
-            }
-
-            $netProps = @{
-                ErrorAction = 'Stop'
             }
 
             $nicProps = @{
@@ -153,7 +150,6 @@ function Get-DnsServerList {
                             $CimSession = New-CimSession @cimProps
                             
                             $dnsProps.Add('CimSession',$CimSession)
-                            $netProps.Add('CimSession',$CimSession)
                             $nicProps.Add('CimSession',$CimSession)
                             Write-Verbose "Connected to CimSession on $(
                                 $Computer
@@ -161,7 +157,7 @@ function Get-DnsServerList {
                                 
                         } Catch {
                             
-                            $CleanUp
+                            Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
                             Write-Warning "Could not connect to $(
                                 $Computer
                             ) [CIM]: $(
@@ -173,8 +169,8 @@ function Get-DnsServerList {
                                     
                     } else {
                         
-                    $CleanUp
-                    Write-Warning "$($Computer
+                        Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
+                        Write-Warning "$($Computer
                             ) is not responding to a ping"
                         continue
                         
@@ -182,7 +178,7 @@ function Get-DnsServerList {
                                 
                 } else {
 
-                    $CleanUp
+                    Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
                     Write-Warning "$($Computer
                         ) does not resolve to an IP Address"
                     continue
@@ -199,7 +195,7 @@ function Get-DnsServerList {
             } Catch {
 
                 if ($_ -like "Cannot find the active adapter") {
-                    $CleanUp
+                    Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
                     Write-Warning "Cannot find the active adapter on $(
                         $Computer): $(
                         $Error[0].Exception.Message)"
@@ -207,32 +203,23 @@ function Get-DnsServerList {
                 }
 
             }
-            $netProps.Add('InterfaceIndex',$ifIndex)
+            $dnsProps.Add('InterfaceIndex',$ifIndex)
 
             # Get the adapter's DNS stack
             Try {
 
-                $Adapters = Get-NetAdapter @netProps
+                Get-DnsClientServerAddress @dnsProps |
+                    Select-Object $ColumnOrder
 
             } Catch {
 
-                if ($_ -like '*cannot find the resource identified*') {
-                    $CleanUp
-                    Write-Warning "$($Computer)'s adapter was not found: $(
-                        $Error[0].Exception.Message)"
-                    continue
-                }
+                Write-Warning "Cannot find the DNS config on $(
+                    $Computer): $(
+                    $Error[0].Exception.Message)"
 
             }
-            $InterfaceIndex = @($Adapters).Where({
-                $_.Status -eq 'Up'
-            }).ifIndex | Sort-Object | Select-Object -First 1
-            $dnsProps.Add('InterfaceIndex',$InterfaceIndex)
-
-            Get-DnsClientServerAddress @dnsProps |
-                Select-Object $ColumnOrder
     
-            $CleanUp
+            Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
 
         }#END: foreach ($Computer in $ComputerName) {}
     
