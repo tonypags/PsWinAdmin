@@ -202,6 +202,7 @@ function Get-DnsServerList {
 
             } Catch {
 
+                Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
                 Write-Warning "Cannot find the DNS config on $(
                     $Computer): $(
                     $Error[0].Exception.Message)"
