@@ -1,4 +1,3 @@
-
 function Get-DnsServerList {
     <#
     .SYNOPSIS
@@ -119,7 +118,12 @@ function Get-DnsServerList {
             }
 
             $netProps = @{
-                Physical = $true
+                ErrorAction = 'Stop'
+            }
+
+            $nicProps = @{
+                ClassName = 'win32_networkadapterconfiguration'
+                Filter = 'IpEnabled="true"'
                 ErrorAction = 'Stop'
             }
 
@@ -150,6 +154,7 @@ function Get-DnsServerList {
                             
                             $dnsProps.Add('CimSession',$CimSession)
                             $netProps.Add('CimSession',$CimSession)
+                            $nicProps.Add('CimSession',$CimSession)
                             Write-Verbose "Connected to CimSession on $(
                                 $Computer
                             )"
@@ -187,6 +192,24 @@ function Get-DnsServerList {
             }#END: if ($Computer -eq $env:COMPUTERNAME) {}
 
             # Find the correct adapter
+            Try {
+
+                $ifIndex = (Get-CimInstance @nicProps).InterfaceIndex
+
+            } Catch {
+
+                if ($_ -like "Cannot find the active adapter") {
+                    $CleanUp
+                    Write-Warning "Cannot find the active adapter on $(
+                        $Computer): $(
+                        $Error[0].Exception.Message)"
+                    continue
+                }
+
+            }
+            $netProps.Add('InterfaceIndex',$ifIndex)
+
+            # Get the adapter's DNS stack
             Try {
 
                 $Adapters = Get-NetAdapter @netProps
