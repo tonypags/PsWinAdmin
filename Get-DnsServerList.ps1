@@ -101,7 +101,7 @@ function Get-DnsServerList {
         }
 
         $CleanUp = {
-            param($CimSession)
+            param($CimSession=$using:CimSession)
             if ($CimSession) {
                 $CimSession | Remove-CimSession -Confirm:$false
                 Remove-Variable 'CimSession' -Scope 'Global'
@@ -144,9 +144,9 @@ function Get-DnsServerList {
                             
                             $cimProps = @{
                                 ComputerName = $Computer
-                                Credential = $Credential
                                 ErrorAction = 'Stop'
                             }
+                            if ($Credential) {$cimProps.Add('Credential',$Credential)}
                             $CimSession = New-CimSession @cimProps
                             
                             $dnsProps.Add('CimSession',$CimSession)
