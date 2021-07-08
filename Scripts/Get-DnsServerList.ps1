@@ -77,7 +77,6 @@ function Get-ADSIComputerInfo {
     Write-Output $Result
 }
 
-
 function Get-DnsServerList {
     <#
     .SYNOPSIS
@@ -235,6 +234,7 @@ function Get-DnsServerList {
                                 
                         } Catch {
                             
+                            $CleanUp
                             Write-Warning "Could not connect to $(
                                 $Computer
                             ) [CIM]: $(
@@ -246,7 +246,8 @@ function Get-DnsServerList {
                                     
                     } else {
                         
-                        Write-Warning "$($Computer
+                    $CleanUp
+                    Write-Warning "$($Computer
                             ) is not responding to a ping"
                         continue
                         
@@ -254,6 +255,7 @@ function Get-DnsServerList {
                                 
                 } else {
 
+                    $CleanUp
                     Write-Warning "$($Computer
                         ) does not resolve to an IP Address"
                     continue
@@ -271,8 +273,9 @@ function Get-DnsServerList {
 
                 if ($_ -like '*cannot find the resource identified*') {
                     $CleanUp
-                    Write-Warning "$($Error[0].Exception.Message)"
-                    throw "$($Computer)'s adapter was not found!"
+                    Write-Warning "$($Computer)'s adapter was not found: $(
+                        $Error[0].Exception.Message)"
+                    continue
                 }
 
             }
@@ -291,8 +294,6 @@ function Get-DnsServerList {
     }#END: process {}
 
 }#END: function Get-DnsServerList {}
-
-
 
 <# I am attempting to pull a computer list from AD
 
