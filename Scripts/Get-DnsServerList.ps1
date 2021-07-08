@@ -101,10 +101,10 @@ function Get-DnsServerList {
         }
 
         $CleanUp = {
-            param($CimSession)
+            param($CimSession=$using:CimSession)
             if ($CimSession) {
-                $CimSession | Remove-CimSession -Confirm:$false
-                Remove-Variable 'CimSession' -Scope 'Global'
+                $CimSession | Remove-CimSession -Confirm:$false -ErrorAction 0
+                Remove-Variable 'CimSession' -ErrorAction 0
             }
         }
 
@@ -138,47 +138,36 @@ function Get-DnsServerList {
 
                 if ($thisDNS.IPAddress) {
 
-                    if (Test-Connection -ComputerName $thisDNS.IPAddress -Count 2 -Quiet) {
-                        
-                        Try {
+                    $cimProps = @{
+                        ComputerName = $Computer
+                        ErrorAction = 'Stop'
+                    }
+                    if ($Credential) {$cimProps.Add('Credential',$Credential)}
+
+                    Try {
+
+                        $CimSession = New-CimSession @cimProps
                             
-                            $cimProps = @{
-                                ComputerName = $Computer
-                                Credential = $Credential
-                                ErrorAction = 'Stop'
-                            }
-                            $CimSession = New-CimSession @cimProps
-                            
-                            $dnsProps.Add('CimSession',$CimSession)
-                            $nicProps.Add('CimSession',$CimSession)
-                            Write-Verbose "Connected to CimSession on $(
-                                $Computer
-                            )"
-                                
-                        } Catch {
-                            
-                            Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
-                            Write-Warning "Could not connect to $(
-                                $Computer
-                            ) [CIM]: $(
-                                $Error[0].Exception.Message
-                            )"
-                            continue
-                                    
-                        }#END: Try {}
-                                    
-                    } else {
+                    } Catch {
                         
                         Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
-                        Write-Warning "$($Computer
-                            ) is not responding to a ping"
+                        Write-Warning "Could not connect to $(
+                            $Computer
+                        ) [CIM]: $(
+                            $Error[0].Exception.Message
+                        )"
                         continue
-                        
-                    }#END: if (Test-Connection -Computer...-Quiet) {}
                                 
+                    }#END: Try {}
+                                            
+                    $dnsProps.Add('CimSession',$CimSession)
+                    $nicProps.Add('CimSession',$CimSession)
+                    Write-Verbose "Connected to CimSession on $(
+                        $Computer
+                    )"
+
                 } else {
 
-                    Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
                     Write-Warning "$($Computer
                         ) does not resolve to an IP Address"
                     continue
@@ -216,6 +205,7 @@ function Get-DnsServerList {
                 Write-Warning "Cannot find the DNS config on $(
                     $Computer): $(
                     $Error[0].Exception.Message)"
+                continue
 
             }
     
@@ -242,11 +232,23 @@ $sv.count
 
 #>
 
-
+$strNow = (Get-Date).ToString('yyyyMMdd-HHmmss')
+$tsctPath = "C:\Temp\Get-DsnServerList.transcript.$($strNow).txt"
+$warnPath = "C:\Temp\Get-DsnServerList.warnings.$($strNow).txt"
+Start-Transcript -Path $tsctPath
 # $sv = Get-VM
-$sv = Get-Content 'c:\temp\servers.txt'
+$sv = Get-Content 'c:\temp\servers.txt' | Sort-Object
 $rpt = Get-DnsServerList -ComputerName $sv -Verbose
+Stop-Transcript
+$Warnings = Get-Content $tsctPath | Select-String '^WARNING'
+$Warnings | Out-String | Out-File $warnPath
 Write-Host ''
 Write-Host "Out of $(@($sv).count) total servers, $(@($rpt).count) returned DNS info."
 Write-Host '$sv = total servers (AD)'
 Write-Host '$rpt = Report of results'
+
+Get-Item $tsctPath,$warnPath
+
+# Ensure cleaned up
+Get-Variable CimSession -ea 0
+Get-CimSession

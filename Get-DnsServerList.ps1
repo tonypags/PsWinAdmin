@@ -103,8 +103,8 @@ function Get-DnsServerList {
         $CleanUp = {
             param($CimSession=$using:CimSession)
             if ($CimSession) {
-                $CimSession | Remove-CimSession -Confirm:$false
-                Remove-Variable 'CimSession' -Scope 'Global'
+                $CimSession | Remove-CimSession -Confirm:$false -ErrorAction 0
+                Remove-Variable 'CimSession' -ErrorAction 0
             }
         }
 
@@ -138,47 +138,36 @@ function Get-DnsServerList {
 
                 if ($thisDNS.IPAddress) {
 
-                    if (Test-Connection -ComputerName $thisDNS.IPAddress -Count 2 -Quiet) {
-                        
-                        Try {
+                    $cimProps = @{
+                        ComputerName = $Computer
+                        ErrorAction = 'Stop'
+                    }
+                    if ($Credential) {$cimProps.Add('Credential',$Credential)}
+
+                    Try {
+
+                        $CimSession = New-CimSession @cimProps
                             
-                            $cimProps = @{
-                                ComputerName = $Computer
-                                ErrorAction = 'Stop'
-                            }
-                            if ($Credential) {$cimProps.Add('Credential',$Credential)}
-                            $CimSession = New-CimSession @cimProps
-                            
-                            $dnsProps.Add('CimSession',$CimSession)
-                            $nicProps.Add('CimSession',$CimSession)
-                            Write-Verbose "Connected to CimSession on $(
-                                $Computer
-                            )"
-                                
-                        } Catch {
-                            
-                            Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
-                            Write-Warning "Could not connect to $(
-                                $Computer
-                            ) [CIM]: $(
-                                $Error[0].Exception.Message
-                            )"
-                            continue
-                                    
-                        }#END: Try {}
-                                    
-                    } else {
+                    } Catch {
                         
                         Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
-                        Write-Warning "$($Computer
-                            ) is not responding to a ping"
+                        Write-Warning "Could not connect to $(
+                            $Computer
+                        ) [CIM]: $(
+                            $Error[0].Exception.Message
+                        )"
                         continue
-                        
-                    }#END: if (Test-Connection -Computer...-Quiet) {}
                                 
+                    }#END: Try {}
+                                            
+                    $dnsProps.Add('CimSession',$CimSession)
+                    $nicProps.Add('CimSession',$CimSession)
+                    Write-Verbose "Connected to CimSession on $(
+                        $Computer
+                    )"
+
                 } else {
 
-                    Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
                     Write-Warning "$($Computer
                         ) does not resolve to an IP Address"
                     continue
@@ -213,9 +202,11 @@ function Get-DnsServerList {
 
             } Catch {
 
+                Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
                 Write-Warning "Cannot find the DNS config on $(
                     $Computer): $(
                     $Error[0].Exception.Message)"
+                continue
 
             }
     
