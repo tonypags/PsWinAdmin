@@ -180,7 +180,15 @@ function Get-DnsServerList {
             Try {
 
                 $ifIndex = (Get-CimInstance @nicProps).InterfaceIndex
-
+### THIS RETURNS MULTIPLE RESULTS! ###
+### THIS RETURNS MULTIPLE RESULTS! ###
+### THIS RETURNS MULTIPLE RESULTS! ###
+### THIS RETURNS MULTIPLE RESULTS! ###
+### THIS RETURNS MULTIPLE RESULTS! ###
+### THIS RETURNS MULTIPLE RESULTS! ###
+### THIS RETURNS MULTIPLE RESULTS! ###
+### THIS RETURNS MULTIPLE RESULTS! ###
+### THIS RETURNS MULTIPLE RESULTS! ###
             } Catch {
 
                 if ($_ -like "Cannot find the active adapter") {
