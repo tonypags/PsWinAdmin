@@ -48,8 +48,8 @@ function Get-DnsServerList {
 
     ServerName  InterfaceAlias DnsIpStack
     ----------  -------------- ---------------
-    PRDVWSWHA02 Ethernet0      {10.202.102.150, 10.6.1.55, 10.207.100.150}
-    halas       Ethernet       {10.202.102.150, 10.6.1.55, 10.207.100.150}
+    PRODA02     Ethernet0      {10.22.10.10, 10.0.1.5, 10.20.10.15}
+    serv1       Ethernet       {10.22.10.10, 10.0.1.5, 10.20.10.15}
     #>
     [CmdletBinding()]
     param (
@@ -129,6 +129,7 @@ function Get-DnsServerList {
                 # do nothing
             } else {
 
+                # Resolve DNS first, before connection
                 $dnsSplat.Set_Item('Name',$Computer)
                 $thisDNS = (Resolve-DnsName @dnsSplat).Where(
                     {$_ -is [Microsoft.DnsClient.Commands.DnsRecord_A]}
@@ -138,6 +139,7 @@ function Get-DnsServerList {
 
                 if ($thisDNS.IPAddress) {
 
+                    # Attempt to create a remote session
                     $cimProps = @{
                         ComputerName = $Computer
                         ErrorAction = 'Stop'
@@ -159,7 +161,7 @@ function Get-DnsServerList {
                         continue
                                 
                     }#END: Try {}
-                                            
+
                     $dnsProps.Add('CimSession',$CimSession)
                     $nicProps.Add('CimSession',$CimSession)
                     Write-Verbose "Connected to CimSession on $(
@@ -179,16 +181,9 @@ function Get-DnsServerList {
             # Find the correct adapter
             Try {
 
-                $ifIndex = (Get-CimInstance @nicProps).InterfaceIndex
-### THIS RETURNS MULTIPLE RESULTS! ###
-### THIS RETURNS MULTIPLE RESULTS! ###
-### THIS RETURNS MULTIPLE RESULTS! ###
-### THIS RETURNS MULTIPLE RESULTS! ###
-### THIS RETURNS MULTIPLE RESULTS! ###
-### THIS RETURNS MULTIPLE RESULTS! ###
-### THIS RETURNS MULTIPLE RESULTS! ###
-### THIS RETURNS MULTIPLE RESULTS! ###
-### THIS RETURNS MULTIPLE RESULTS! ###
+                $ifIndex = @(Get-CimInstance @nicProps
+                    ).InterfaceIndex | Sort-Object
+
             } Catch {
 
                 if ($_ -like "Cannot find the active adapter") {
@@ -204,9 +199,10 @@ function Get-DnsServerList {
 
             # Get the adapter's DNS stack
             Try {
-
-                Get-DnsClientServerAddress @dnsProps |
-                    Select-Object $ColumnOrder
+                                
+                $rawResult = @(Get-DnsClientServerAddress @dnsProps).Where(
+                    {$_.ServerAddresses}
+                ) 
 
             } Catch {
 
@@ -217,8 +213,49 @@ function Get-DnsServerList {
                 continue
 
             }
-    
+
             Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
+            
+            # Ensure we grab only 1 adapter
+            $Result = if (@($rawResult).count -gt 1) {
+
+                # We will compare these IP Address arrays
+                $baseline = $null
+                $ifIndexToUse = $null
+                foreach ($iFace in $rawResult) {
+
+                    $thisStack = $iFace.ServerAddresses
+                    $baseline = if ($baseline) {
+                        
+                        # There should not be any difference, ever
+                        #  ...this is known, empirically.
+                        if (Compare-Object $baseline $thisStack) {
+                            Write-Warning "$($Computer) has $(@($ifIndex
+                                ).count) IP-enabled interfaces!"
+                            Write-Warning "Selecting the first item with index $($ifIndexToUse)"
+                        } else {
+                            $baseline
+                        }
+
+                    } else {
+                        
+                        # The first item through the loop always ends here
+                        # We will use this value
+                        $thisStack
+                        # The first item is always the lowest ifIndex
+                        $ifIndexToUse = $iFace.InterfaceIndex
+
+                    }#END: if ($baseline) {}
+
+                }#END: foreach ($iFace in $rawResult) {}
+
+                $rawResult.Where({$_.InterfaceIndex -eq $ifIndexToUse})
+
+            } else {
+                $rawResult
+            }
+
+            $Result | Select-Object $ColumnOrder
 
         }#END: foreach ($Computer in $ComputerName) {}
     
