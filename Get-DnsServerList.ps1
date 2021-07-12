@@ -120,7 +120,7 @@ function Get-DnsServerList {
 
             $nicProps = @{
                 ClassName = 'win32_networkadapterconfiguration'
-                Filter = 'IpEnabled="true"'
+                Filter = 'IpEnabled="true" AND DHCPEnabled="false"'
                 ErrorAction = 'Stop'
             }
 
@@ -179,6 +179,7 @@ function Get-DnsServerList {
             }#END: if ($Computer -eq $env:COMPUTERNAME) {}
 
             # Find the correct adapter
+            $ifIndex = Find-ActiveNetAdapter
             Try {
 
                 $ifIndex = @(Get-CimInstance @nicProps
@@ -200,7 +201,9 @@ function Get-DnsServerList {
             # Get the adapter's DNS stack
             Try {
                                 
-                $rawResult = @(Get-DnsClientServerAddress @dnsProps).Where(
+                $rawResult = @(
+                    Get-DnsClientServerAddress @dnsProps
+                ).Where(
                     {$_.ServerAddresses}
                 ) 
 
@@ -216,7 +219,11 @@ function Get-DnsServerList {
 
             Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
             
-            # Ensure we grab only 1 adapter
+            ### Commented this out
+            #### due to fact that we want ALL static configs
+            $Result = $rawResult
+            <# Ensure we grab only 1 adapter
+
             $Result = if (@($rawResult).count -gt 1) {
 
                 # We will compare these IP Address arrays
@@ -253,7 +260,7 @@ function Get-DnsServerList {
 
             } else {
                 $rawResult
-            }
+            }#>
 
             $Result | Select-Object $ColumnOrder
 
