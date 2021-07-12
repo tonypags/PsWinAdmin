@@ -262,7 +262,7 @@ function Get-DnsServerList {
 
             $Result = foreach ($item in $rawResult) {
 
-                $dn = [regex]::Match($item.ServerFqdn,('^{0}\.' -f ($item.ServerName)))
+                $dn = [regex]::Match($item.ServerFqdn,('^{0}\.(.+)$' -f ($item.ServerName))).Groups[1].Value
                 $Item | Add-Member -MemberType 'NoteProperty' -Name 'Domain' -Value $dn -PassThru
 
             }#END: $Result = foreach ($item in $rawResult) {}
@@ -274,3 +274,8 @@ function Get-DnsServerList {
     }#END: process {}
 
 }#END: function Get-DnsServerList {}
+
+$item = [pscustomobject]@{
+'ServerFqdn' = 'halas.us.nfl.net'
+'ServerName' = 'halas'
+}
