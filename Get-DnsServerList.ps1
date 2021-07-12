@@ -136,6 +136,7 @@ function Get-DnsServerList {
                 ).Where(
                     {$_.Name -like "$($Computer)*"}
                 )
+                $Domain = [regex]::Match($thisDNS.Name,('\.(.+)$')).Groups[1].Value
 
                 if ($thisDNS.IPAddress) {
 
@@ -217,65 +218,17 @@ function Get-DnsServerList {
             }
 
             Invoke-Command -ScriptBlock $CleanUp -ArgumentList $CimSession
-            
-            ### Commented this out
-            #### due to fact that we want ALL static configs
-            <# Ensure we grab only 1 adapter
 
-            $Result = if (@($rawResult).count -gt 1) {
+            foreach ($item in $rawResult) {
 
-                # We will compare these IP Address arrays
-                $baseline = $null
-                $ifIndexToUse = $null
-                foreach ($iFace in $rawResult) {
-
-                    $thisStack = $iFace.ServerAddresses
-                    $baseline = if ($baseline) {
-                        
-                        # There should not be any difference, ever
-                        #  ...this is known, empirically.
-                        if (Compare-Object $baseline $thisStack) {
-                            Write-Warning "$($Computer) has $(@($ifIndex
-                                ).count) IP-enabled interfaces!"
-                            Write-Warning "Selecting the first item with index $($ifIndexToUse)"
-                        } else {
-                            $baseline
-                        }
-
-                    } else {
-                        
-                        # The first item through the loop always ends here
-                        # We will use this value
-                        $thisStack
-                        # The first item is always the lowest ifIndex
-                        $ifIndexToUse = $iFace.InterfaceIndex
-
-                    }#END: if ($baseline) {}
-
-                }#END: foreach ($iFace in $rawResult) {}
-
-                $rawResult.Where({$_.InterfaceIndex -eq $ifIndexToUse})
-
-            } else {
-                $rawResult
-            }#>
-
-            $Result = foreach ($item in $rawResult) {
-
-                $dn = [regex]::Match($item.ServerFqdn,('^{0}\.(.+)$' -f ($item.ServerName))).Groups[1].Value
-                $Item | Add-Member -MemberType 'NoteProperty' -Name 'Domain' -Value $dn -PassThru
+                $Item | Add-Member -MemberType ('NoteProperty'
+                        ) -Name 'Domain' -Value $Domain -PassThru |
+                    Select-Object $ColumnOrder
 
             }#END: $Result = foreach ($item in $rawResult) {}
-
-            $Result | Select-Object $ColumnOrder
 
         }#END: foreach ($Computer in $ComputerName) {}
     
     }#END: process {}
 
 }#END: function Get-DnsServerList {}
-
-$item = [pscustomobject]@{
-'ServerFqdn' = 'halas.us.nfl.net'
-'ServerName' = 'halas'
-}
