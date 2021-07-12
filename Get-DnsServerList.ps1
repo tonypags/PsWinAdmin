@@ -78,6 +78,7 @@ function Get-DnsServerList {
                 $_.CimSystemProperties.ServerName
             }}
             'InterfaceAlias'
+            'InterfaceIndex'
             @{Name='DnsIpStack';Exp={
                 $_.ServerAddresses
             }}
