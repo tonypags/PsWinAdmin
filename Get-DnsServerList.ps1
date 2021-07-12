@@ -133,9 +133,11 @@ function Get-DnsServerList {
                 $dnsSplat.Set_Item('Name',$Computer)
                 $thisDNS = (Resolve-DnsName @dnsSplat).Where(
                     {$_ -is [Microsoft.DnsClient.Commands.DnsRecord_A]}
-                ).Where(
-                    {$_.Name -like "$($Computer)*"}
-                )
+                ).Where( {$_.Name -like "$($Computer)*"} ) |
+                    Sort-Object -Property IPAddress |
+                    Select-Object -First 1
+
+                # Pull the domain name from the DNS result
                 $Domain = [regex]::Match($thisDNS.Name,('\.(.+)$')).Groups[1].Value
 
                 if ($thisDNS.IPAddress) {
@@ -205,7 +207,7 @@ function Get-DnsServerList {
                     Get-DnsClientServerAddress @dnsProps
                 ).Where(
                     {$_.ServerAddresses}
-                ) 
+                )
 
             } Catch {
 
