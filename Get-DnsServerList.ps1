@@ -220,7 +220,6 @@ function Get-DnsServerList {
             
             ### Commented this out
             #### due to fact that we want ALL static configs
-            $Result = $rawResult
             <# Ensure we grab only 1 adapter
 
             $Result = if (@($rawResult).count -gt 1) {
@@ -260,6 +259,13 @@ function Get-DnsServerList {
             } else {
                 $rawResult
             }#>
+
+            $Result = foreach ($item in $rawResult) {
+
+                $dn = [regex]::Match($item.ServerFqdn,('^{0}\.' -f ($item.ServerName)))
+                $Item | Add-Member -MemberType 'NoteProperty' -Name 'Domain' -Value $dn -PassThru
+
+            }#END: $Result = foreach ($item in $rawResult) {}
 
             $Result | Select-Object $ColumnOrder
 
