@@ -116,6 +116,7 @@ function Get-DnsServerList {
 
             $dnsProps = @{
                 AddressFamily = $AddressFamily
+                ErrorAction = 'Stop'
             }
 
             $nicProps = @{
