@@ -90,7 +90,7 @@ function Get-DnsServerList {
             @{Name='ServerIp';Exp={
                 $thisDNS.IPAddress
             }}
-
+            'Domain'
         )
 
         $dnsSplat = @{
