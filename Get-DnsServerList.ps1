@@ -179,7 +179,6 @@ function Get-DnsServerList {
             }#END: if ($Computer -eq $env:COMPUTERNAME) {}
 
             # Find the correct adapter
-            $ifIndex = Find-ActiveNetAdapter
             Try {
 
                 $ifIndex = @(Get-CimInstance @nicProps
