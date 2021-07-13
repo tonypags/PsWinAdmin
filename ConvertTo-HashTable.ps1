@@ -2,10 +2,16 @@ function ConvertTo-HashTable {
     <#
     .SYNOPSIS
     Converts text file content like a PSD1 file into a hashtable.
+    .DESCRIPTION
+    Convert raw text contained in a PSD1 file and
+    creates a hashtable object on the pipeline, after
+    running a basic verification routine on the logic in the file.
     .PARAMETER Path
-    The file containing the hash table, ex: PSD1 file
+    A file containing the hash table, ex: PSD1 file
     .PARAMETER HashTableContent
-    The hashtable represented as a string (array)
+    The hashtable represented as a string (or array)
+    .PARAMETER Force
+    Does not check the loic before executing the code contained in the PSD1 file.
     .EXAMPLE
     $hash = ConvertTo-HashTable -HashTableContent (Get-Content $filepath)
     .EXAMPLE
@@ -18,13 +24,19 @@ function ConvertTo-HashTable {
 
         # The file containing the hash table, ex: PSD1 file
         [Parameter(ParameterSetName='byPath')]
+        [ValidateScript({Test-Path $_})]
         [string]
         $Path,
 
         # The hashtable represented as a string (array)
         [Parameter(ValueFromPipeline,ParameterSetName='byContent')]
         [string[]]
-        $HashTableContent
+        $HashTableContent,
+
+        # Does not check the loic before executing the code contained in the PSD1 file.
+        [Parameter()]
+        [switch]
+        $Force
 
     )
     
@@ -58,7 +70,9 @@ function ConvertTo-HashTable {
         # Define a hashtable for all tasks (KEY=pathToParentFolder, VALUE=retentionInDays)
         Try {
             $scriptBlock = [scriptblock]::Create($content)
-            $scriptBlock.CheckRestrictedLanguage([string[]]@(), [string[]]@(), $false)
+            if ($Force) {} else {
+                $scriptBlock.CheckRestrictedLanguage([string[]]@(), [string[]]@(), $false)
+            }
             & $scriptBlock
         } Catch {
             throw "Unable to execute parsed text as a scriptblock!"
