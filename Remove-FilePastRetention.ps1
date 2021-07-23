@@ -5,7 +5,7 @@ function Remove-FilePastRetention {
     .PARAMETER ConfigPath
     This file must contain a hash table for all paths
     (KEY=pathToParentFolder, VALUE=retentionInDays)
-    .PARAMETER ConfigPath
+    .PARAMETER Recurse
     Remove all items matching the config in all subfolders
     #>
     [CmdletBinding(SupportsShouldProcess)]
@@ -26,9 +26,10 @@ function Remove-FilePastRetention {
     # Define a hashtable for all tasks (KEY=pathToParentFolder, VALUE=retentionInDays)
     Try {
         Write-Verbose "Content being parsed from config file: [$($ConfigPath)]."
-        $Tasks = Get-Content -Path $ConfigPath -Raw -ErrorAction Stop | ConvertTo-HashTable
+        $Tasks = Get-Content -Path $ConfigPath -ErrorAction Stop | ConvertTo-HashTable
     } Catch {
         Write-Warning "File Missing: [$($ConfigPath)]"
+        Write-Warning "Error: [$($Error[0].Exception.Message)]"
         Write-Warning "Try running the New-RetentionConfig function"
         throw "File Missing: [$($ConfigPath)]"
     }
