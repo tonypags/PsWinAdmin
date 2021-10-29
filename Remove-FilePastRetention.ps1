@@ -29,7 +29,7 @@ function Remove-FilePastRetention {
         $Tasks = Get-Content -Path $ConfigPath -ErrorAction Stop | ConvertTo-HashTable
     } Catch {
         Write-Warning "File Missing: [$($ConfigPath)]"
-        Write-Warning "Error: [$($Error[0].Exception.Message)]"
+        Write-Warning "Error: [$($_.exception.message)]"
         Write-Warning "Try running the New-RetentionConfig function"
         throw "File Missing: [$($ConfigPath)]"
     }
