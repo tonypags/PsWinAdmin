@@ -72,14 +72,6 @@ function Add-TrueTypeFont {
                     $regPath = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts"
                     New-ItemProperty -Name $objFile.fullname -Path $regPath -PropertyType string -Value ($objFile.fullname)
                     
-                    # Test each action
-                    $Installed = Get-Font $FontName
-                    if ($Installed) {
-                        Write-Verbose "Font successfully installed: $($FontName)"
-                    } else {
-                        Write-Warning "Font not installed: $($FontName)!"
-                    }
-
                 } else {
         
                     Write-Warning "Path not found: $($objFile.fullname)"
