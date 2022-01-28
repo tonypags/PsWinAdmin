@@ -36,13 +36,20 @@ function Find-ActiveNicInterface {
         $CimSession,
 
         [switch]
-        $IncludeNullGateway
+        $IncludeNullGateway,
+
+        [switch]
+        $ExcludeDhcpAdapters
     )
     
     $nicProps = @{
         ClassName = 'win32_networkadapterconfiguration'
-        Filter = 'IpEnabled="true" AND DHCPEnabled="false"'
+        Filter = 'IpEnabled="true"'
     }
+    if ($ExcludeDhcpAdapters) {
+        $nicProps.Filter += ' AND DHCPEnabled="false"'
+    }
+
     if ($CimSession) {$nicProps.CimSession = $CimSession}
     
     Try {
