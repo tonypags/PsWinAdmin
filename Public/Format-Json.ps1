@@ -1,21 +1,21 @@
 function Format-Json {
     <#
     .SYNOPSIS
-        Prettifies JSON output.
+    Prettifies JSON output.
     .DESCRIPTION
-        Reformats a JSON string so the output looks better than what ConvertTo-Json outputs.
+    Reformats a JSON string so the output looks better than what ConvertTo-Json outputs.
     .PARAMETER Json
-        Required: [string] The JSON text to Beautify.
+    Required: [string] The JSON text to Beautify.
     .PARAMETER Compress
-        Optional: Write-Outputs the json string compressed.
+    Optional: Write-Outputs the json string compressed.
     .PARAMETER Indentation
-        Optional: The number of spaces (1..1024) to use for indentation. Defaults to 4.
+    Optional: The number of spaces (1..1024) to use for indentation. Defaults to 4.
     .PARAMETER AsArray
-        Optional: If set, the output will be in the form of a string array, otherwise a single string is output.
+    Optional: If set, the output will be in the form of a string array, otherwise a single string is output.
     .EXAMPLE
-        $json | ConvertTo-Json  | Format-Json -Indentation 2
+    $json | ConvertTo-Json  | Format-Json -Indentation 2
     .NOTES
-        Borrowed from Theo: https://stackoverflow.com/a/56324939
+    Borrowed from Theo: https://stackoverflow.com/a/56324939
     #>
     [CmdletBinding(DefaultParameterSetName = 'Beautify')]
     Param(
@@ -43,14 +43,14 @@ function Format-Json {
 
     if ($PSCmdlet.ParameterSetName -eq 'Compress') {
 
-        Write-Output ($Json | ConvertFrom-Json) | ConvertTo-Json -Depth 100 -Compress
+        ($Json | ConvertFrom-Json) | ConvertTo-Json -Depth 99 -Compress
 
     } elseif ($PSCmdlet.ParameterSetName -eq 'Beautify') {
 
         # If the input JSON text has been created with ConvertTo-Json -Compress
         # then we first need to reconvert it without compression
         if ($Json -notmatch '\r?\n') {
-            $Json = ($Json | ConvertFrom-Json) | ConvertTo-Json -Depth 100
+            $Json = ($Json | ConvertFrom-Json) | ConvertTo-Json -Depth 99
         }
     
         $indent = 0
@@ -78,11 +78,11 @@ function Format-Json {
     
         if ($AsArray) {
             
-            Write-Output $result
+            $result
         
         } else {
 
-            Write-Output $result -Join [Environment]::NewLine
+            $result -Join [Environment]::NewLine
 
         }
 
