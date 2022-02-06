@@ -2,7 +2,7 @@
 
 param(
     # The file path to the file exported to TXT as a _Formatted List_
-    $Path = (Join-Path 'C:\Reports' "Domain-Admin_Run-As_$(
+    $Path = (Join-Path $env:TEMP "Domain-Admin_Run-As_$(
         (Get-Date).ToString('yyyyMMddHHmmss')).txt")
 )
 
@@ -190,7 +190,7 @@ function Find-DomainAdminServicesAndTasks {
         # All AD Computer objects listed as servers and recently active
         $Computer =
             Get-ADComputer -Filter {
-                    operatingSystem -like "*server*"
+                    operatingSystem -like "*windows*server*"
                 } -Properties operatingsystem,LastLogonDate |
                 Where-Object {
                     $_.enabled -and 
@@ -326,4 +326,4 @@ $Report | Export-Csv -Path $csvPath -Force -NoTypeInformation
 
 Write-Host "The result has been exported to..." -f Green -b Black
 Write-Output (Get-Item $Path | Select-Object -ExpandProperty FullName)
-if (Read-Host "Open File now (Y/N)?" -eq 'y') {Get-Item $Path | ii}
+if (Read-Host "Open File now (Y/N)?" -eq 'y') {Get-Item $Path | Invoke-Item}
