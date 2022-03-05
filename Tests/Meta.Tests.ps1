@@ -48,3 +48,4 @@ Describe 'Text files formatting' {
         }
     }
 }
+
