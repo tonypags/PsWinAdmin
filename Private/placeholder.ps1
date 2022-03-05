@@ -1,3 +1,5 @@
-function HelloWorld {
-    'Hello World'
+function placeholder {
+    param (
+    )
+    'placeholder'
 }

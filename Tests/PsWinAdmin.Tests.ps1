@@ -17,18 +17,18 @@ Describe 'PsWinAdmin Tests' {
     }
 
     Context 'Test PsWinAdmin Functions' {
-        
+
         BeforeAll {
             $script:info = Get-SeasonInfo
             $script:year = $script:info.SeasonYear
             $script:Sched = Get-GsisScheduleApi
         }
-        
+
         # Remove the tested item from the initial array
         AfterEach {
             $script:funcNames = $script:funcNames | Where-Object {$_ -ne $script:thisName}
         }
-        
+
         It 'Formats JSON objects' {
             $json = Get-Process | ConvertTo-Json -Compress
             $json.gettype().name | Should -Be 'String'
@@ -50,7 +50,6 @@ Describe 'PsWinAdmin Tests' {
 
     }
 
-    
     Context 'Clean up' {
 
         It 'Ensures all public functions have tests' {

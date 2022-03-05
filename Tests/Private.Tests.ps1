@@ -2,17 +2,17 @@ Describe 'Private Tests' {
     
     # Import Private functions
     BeforeAll {
-        $privItems = Get-ChildItem $PSScriptRoot\..\Private\*.ps1
-        $privItems | ForEach-Object {. $_.FullName}
-        $script:funcNames = @($privItems.BaseName)
+        $script:privItems = Get-ChildItem $PSScriptRoot\..\Private\*.ps1
+        $script:privItems | ForEach-Object {. $_.FullName}
+        $script:funcNames = @($script:privItems.BaseName)
     }
     
     Context 'Test Private Functions' {
 
         # Check for Private Functions in Test Memory Space
         BeforeAll {
-            if ($privItems) {
-                foreach ($item in $privItems) {
+            if ($script:privItems) {
+                foreach ($item in $script:privItems) {
                     (Get-Command $item.BaseName).Name | Should -Be $item.BaseName
                 }
             } else {
@@ -22,14 +22,15 @@ Describe 'Private Tests' {
 
         # Remove the tested item from the initial array
         AfterEach {
-            $script:funcNames = $script:funcNames | Where-Object {$_ -ne $thisName}
+            $script:funcNames = $script:funcNames | Where-Object {$_ -ne $script:thisName}
         }
 
         # Unit tests ...
 
         It 'Checks the placeholder file' {
-            $thisName = 'placeholder'
             placeholder | Should -Be $thisName
+
+            $script:thisName = 'placeholder'
         }
 
     }
@@ -38,7 +39,6 @@ Describe 'Private Tests' {
 
         It 'Ensures all  private functions have tests' {
             $script:funcNames | Should -BeNullOrEmpty
-            $script:funcNames | Should -Be $thisName
         }
     }
 
