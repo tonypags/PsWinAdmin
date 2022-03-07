@@ -1,2 +1,5 @@
+*.nupkg
+*.old
+*.txt
 /Drafts
 *.cfg.psd1
