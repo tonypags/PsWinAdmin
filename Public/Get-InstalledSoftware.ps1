@@ -54,7 +54,7 @@ Function Get-InstalledSoftware {
     Process{
         if ( ($Name -ne $env:COMPUTERNAME) -and ( -not (Test-Connection -ComputerName $Name -count 1 -quiet))) {
             Write-Error -Message "Unable to contact $Name. Please verify its network connectivity and try again." -Category ObjectNotFound -TargetObject $Computer
-            Break
+            continue
         }
         $masterKeys = @()
         $remoteCURegKey = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey($cuReg,$computer)
@@ -64,14 +64,14 @@ Function Get-InstalledSoftware {
             foreach ($subName in $regKey.GetSubkeyNames()) {
                 foreach($sub in $regKey.OpenSubkey($subName)) {
                     $masterKeys += (New-Object PSObject -Property @{
-                        "ComputerName" = $Name
-                        "Name" = $sub.getvalue("displayname")
-                        "SystemComponent" = $sub.getvalue("systemcomponent")
-                        "ParentKeyName" = $sub.getvalue("parentkeyname")
-                        "Version" = $sub.getvalue("DisplayVersion")
-                        "UninstallCommand" = $sub.getvalue("UninstallString")
-                        "InstallDate" = $sub.getvalue("InstallDate")
-                        "RegPath" = $sub.ToString()
+                        "ComputerName"      = $Name
+                        "Name"              = $sub.getvalue("displayname")
+                        "SystemComponent"   = $sub.getvalue("systemcomponent")
+                        "ParentKeyName"     = $sub.getvalue("parentkeyname")
+                        "Version"           = $sub.getvalue("DisplayVersion")
+                        "UninstallCommand"  = $sub.getvalue("UninstallString")
+                        "InstallDate"       = $sub.getvalue("InstallDate")
+                        "RegPath"           = $sub.ToString()
                     })
                 }
             }
@@ -82,14 +82,14 @@ Function Get-InstalledSoftware {
                 foreach ($subName in $regKey.getsubkeynames()) {
                     foreach ($sub in $regKey.opensubkey($subName)) {
                         $masterKeys += (New-Object PSObject -Property @{
-                            "ComputerName" = $Name
-                            "Name" = $sub.getvalue("displayname")
-                            "SystemComponent" = $sub.getvalue("systemcomponent")
-                            "ParentKeyName" = $sub.getvalue("parentkeyname")
-                            "Version" = $sub.getvalue("DisplayVersion")
+                            "ComputerName"     = $Name
+                            "Name"             = $sub.getvalue("displayname")
+                            "SystemComponent"  = $sub.getvalue("systemcomponent")
+                            "ParentKeyName"    = $sub.getvalue("parentkeyname")
+                            "Version"          = $sub.getvalue("DisplayVersion")
                             "UninstallCommand" = $sub.getvalue("UninstallString")
-                            "InstallDate" = $sub.getvalue("InstallDate")
-                            "RegPath" = $sub.ToString()
+                            "InstallDate"      = $sub.getvalue("InstallDate")
+                            "RegPath"          = $sub.ToString()
                         })
                     }
                 }
