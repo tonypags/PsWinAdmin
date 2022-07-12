@@ -94,7 +94,7 @@ $strAppName = '*application*name*partial*';[Net.ServicePointManager]::SecurityPr
 ## Find Events around the time of the last reboot
 (this example outputs to the console using Format-Table)
 ```
-$LogNames=@('System','Application');[Net.ServicePointManager]::SecurityProtocol=[enum]::GetNames([Net.SecurityProtocolType])|Foreach-Object{[Net.SecurityProtocolType]::$_};(New-Object Net.WebClient).DownloadString( 'https://raw.githubusercontent.com/tonypags/PsWinAdmin/master/Public/Get-RebootReport.ps1' )| iex;$LastRebootTime = (Get-RebootReport)[0].Date;$Events=@();$LogNames|%{$FilterHashtable = @{LogName=$_;EndTime=($LastRebootTime.AddMinutes(5));StartTime=($LastRebootTime.AddMinutes(-60));};Get-WinEvent -FilterHashtable $FilterHashtable|%{$Events += $_}};$Events| sort TimeCreated |ft LogName, TimeCreated, ProviderName, Message -a -wrap;
+$csvPath="$($env:temp)\temp.csv";$LogNames=@('System','Application');[Net.ServicePointManager]::SecurityProtocol=[enum]::GetNames([Net.SecurityProtocolType])|Foreach-Object{[Net.SecurityProtocolType]::$_};(New-Object Net.WebClient).DownloadString( 'https://raw.githubusercontent.com/tonypags/PsWinAdmin/master/Public/Get-RebootReport.ps1' )| iex;$LastRebootTime = (Get-RebootReport)[0].Date;$Events=@();$LogNames|%{$FilterHashtable = @{LogName=$_;EndTime=($LastRebootTime.AddMinutes(1));StartTime=($LastRebootTime.AddMinutes(-7));};Get-WinEvent -FilterHashtable $FilterHashtable|%{$Events += $_}};$Events| sort TimeCreated |select LogName, TimeCreated, ProviderName, Message | export-csv $csvPath -notype; ii $csvPath
 ```
 
 
