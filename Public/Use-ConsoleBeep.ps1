@@ -1,4 +1,4 @@
-﻿function Use-ConsoleBeep {
+function Use-ConsoleBeep {
 
     <#
     .SYNOPSIS
