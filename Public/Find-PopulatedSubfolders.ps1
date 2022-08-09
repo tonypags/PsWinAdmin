@@ -62,10 +62,17 @@ function Find-PopulatedSubfolders {
 
             $leaf = Split-Path $path -Leaf
 
+            $TotalSize = [math]::Round(
+                (
+                    ($files | ForEach-Object {$_.length} |
+                    Measure-Object -Sum).Sum / 1MB
+                ),
+                2
+            )
             $Violations.Add([pscustomobject]@{
                 Items     = [int]($files.Count)
                 Name      = $leaf
-                TotalSize = [int64]($files.length | Measure-Object -Sum).Sum
+                TotalSize = $TotalSize
                 FullName  = $path
             })
 
