@@ -49,7 +49,8 @@ function Find-PopulatedSubfolders {
 
     # Recurse Child [object[]]s (folders only) and expand [string[]]s
     $recursedParents = foreach ($folder in $resolvedParents) {
-        (Get-ChildItem -Path $folder -Recurse -Directory).FullName
+        (Get-ChildItem -Path $folder -Recurse -Directory).FullName |
+        Where-Object {$_}
     }
 
     # Set-Location "$($env:SYSTEMDRIVE)\"
@@ -75,14 +76,6 @@ function Find-PopulatedSubfolders {
                 TotalSize = $TotalSize
                 FullName  = $path
             })
-
-        } elseif ($null -eq $path) {
-
-            Write-Host "Path is null???"
-            Write-Host "`$path: $path"
-            Write-Host "`$files.Count >= $Items"
-            Write-Error "DIR Error: `n$(@($errDir)[0])"
-
         }
     }
 
