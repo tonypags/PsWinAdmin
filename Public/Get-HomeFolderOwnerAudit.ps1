@@ -1,4 +1,4 @@
-﻿function Get-HomeFolderOwnerAudit {
+function Get-HomeFolderOwnerAudit {
 
     <#
     .SYNOPSIS

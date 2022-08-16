@@ -1,4 +1,4 @@
-﻿function Get-ADSIComputerInfo {
+function Get-ADSIComputerInfo {
     <#
     .SYNOPSIS
     Retrieves computer objects from Active Directory using ADSI.

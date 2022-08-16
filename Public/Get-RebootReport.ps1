@@ -1,4 +1,4 @@
-﻿function Get-RebootReport {
+function Get-RebootReport {
     [CmdletBinding()]
     param (
         # Computer(s) to report on reboot history.

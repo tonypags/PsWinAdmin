@@ -1,4 +1,4 @@
-﻿function Get-VersionDotNet ()
+function Get-VersionDotNet ()
 {
 
     Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP' -recurse |
