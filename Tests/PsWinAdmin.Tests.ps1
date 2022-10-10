@@ -8,8 +8,9 @@ Describe 'PsWinAdmin Tests' {
             Select-Object -ExpandProperty Name
 
         # dot-sourcing all functions: Required for Mocking
-        Get-ChildItem   $PSScriptRoot\..\Private\*.ps1,
-                        $PSScriptRoot\..\Public\*.ps1   |
+        $modParent = Split-Path $thisModule.Path -Parent
+        Get-ChildItem   $modParent\Private\*.ps1,
+                        $modParent\Public\*.ps1   |
         ForEach-Object {. $_.FullName}
     }
 
