@@ -4,7 +4,7 @@ Function Remove-OldFile
     .SYNOPSIS
     Deletes old files. 
     .DESCRIPTION
-    Deletes old files in a given folder which are older than a given date.
+    Deletes old files in a given folder (no recursion) which are older than a given date.
     .EXAMPLE
     Remove-OldFile -Path "C:\Program Files\Symantec\Symantec Endpoint Protection Manager\data\outbox\ImportPackage" -Retention 14 -whatif
     #>
