@@ -52,7 +52,7 @@ function Remove-FilePastRetention {
         # Find files 
         $FilesToDelete = @()
         Write-Verbose "Finding files older than $($ret) days under $($Path)."
-        $FilesToDelete += Get-ChildItem $Path -File -Recurse |
+        $FilesToDelete += Get-ChildItem $Path -File -Recurse:$Recurse |
             Where-Object {$_.LastWriteTime -lt $Now.AddDays(-$ret)}
 
         # Action files
