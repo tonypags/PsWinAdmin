@@ -51,7 +51,7 @@ function Write-Log
        [string]
        [ValidateNotNull()]
        [ValidateNotNullOrEmpty()]
-       $TimestampFormat = 'yyyy-MM-dd_HH:mm:ss',
+       $TimestampFormat = 'yyyy-MM-dd_HH:mm:ss.fff',
 
        # Type of message, allowed are DEBUG, INFO*, WARN, ERROR, FAIL, etc
        [Parameter()]
@@ -59,14 +59,14 @@ function Write-Log
        [ValidateNotNull()]
        [ValidateNotNullOrEmpty()]
        [string]
-       $EntryType = 'INFO'
+       $EntryType = 'INFO',
+
+       [Parameter()]
+       [switch]
+       $PassHost
     )
 
-    Begin
-    {
-    }
-    Process
-    {
+    Process {
         $EntryType = $EntryType.ToUpper()
         
         # Make sure the file exists
@@ -85,7 +85,7 @@ function Write-Log
         $strContent = $strContent + $Content
 
         # Add Content to the file.
-        Try{
+        Try {
             $Splat = @{
                 Value = $strContent
                 Path = $FilePath
@@ -94,8 +94,8 @@ function Write-Log
                 ErrorVariable = 'LogError'
             }
             Add-Content @Splat
-        }
-        Catch{
+
+        } Catch {
             
             if(!$WriteLogErrorHappened){
                 Write-Host "Logging error:" -ForegroundColor Gray
@@ -104,8 +104,6 @@ function Write-Log
             }
         }
 
-    }
-    End
-    {
+        if ($PassHost.IsPresent) { Write-Host $Content }
     }
 }
