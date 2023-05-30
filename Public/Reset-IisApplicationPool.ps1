@@ -3,11 +3,8 @@ function Reset-IisApplicationPool {
         ConfirmImpact="High",
         SupportsShouldProcess=$true
     )]
-    $WmiProps = @{
-        namespace = "root\MicrosoftIISv2"
-        class = "IIsApplicationPool"
-    }
-    $appPools = (Get-WmiObject @WmiProps).Name
+    param()
+    $appPools = Get-IISAppPool
     
     if ($pscmdlet.ShouldProcess(
         "appPools",
@@ -18,5 +15,4 @@ function Reset-IisApplicationPool {
             $appPool.Recycle()
         }
     }
-
 }

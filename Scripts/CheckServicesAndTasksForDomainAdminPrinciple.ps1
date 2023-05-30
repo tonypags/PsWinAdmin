@@ -215,7 +215,7 @@ function Find-DomainAdminServicesAndTasks {
                     ErrorAction = 'SilentlyContinue'
                     ErrorVariable = 'errService'
                 }
-                $Services = Get-WmiObject @ServiceSplat |
+                $Services = Get-CimInstance @ServiceSplat |
                     Where-Object {
                         $arrUser -contains "$($env:USERDOMAIN
                             )\$($_.StartName -replace '.*\\')"

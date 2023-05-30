@@ -65,17 +65,17 @@ Function Get-OfficeVersion {
     
      foreach ($computer in $ComputerName) {
         if ($Credentials) {
-           $os=Get-WMIObject win32_operatingsystem -computername $computer -Credential $Credentials
+           $os=Get-CimInstance win32_operatingsystem -computername $computer -Credential $Credentials
         } else {
-           $os=Get-WMIObject win32_operatingsystem -computername $computer
+           $os=Get-CimInstance win32_operatingsystem -computername $computer
         }
     
         $osArchitecture = $os.OSArchitecture
     
         if ($Credentials) {
-           $regProv = Get-Wmiobject -list "StdRegProv" -namespace root\default -computername $computer -Credential $Credentials
+           $regProv = Get-CimInstance -list "StdRegProv" -namespace root\default -computername $computer -Credential $Credentials
         } else {
-           $regProv = Get-Wmiobject -list "StdRegProv" -namespace root\default -computername $computer
+           $regProv = Get-CimInstance -list "StdRegProv" -namespace root\default -computername $computer
         }
     
         [System.Collections.ArrayList]$VersionList = New-Object -TypeName System.Collections.ArrayList

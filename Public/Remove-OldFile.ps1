@@ -24,7 +24,7 @@ Function Remove-OldFile
 
     ### Get the drive space baseline value
     $DriveLetter = (Resolve-Path $Path) -replace '\\.*'
-    $oDriveSpace = Get-WmiObject win32_logicaldisk | 
+    $oDriveSpace = Get-CimInstance win32_logicaldisk | 
                         where { $_.DeviceID -eq $DriveLetter } |
                         select -expand FreeSpace | %{
                             [math]::Round(( $_ / 1MB),0) 
@@ -42,7 +42,7 @@ Function Remove-OldFile
     sleep 5
 
     ### Get the new drive space value
-    $pDriveSpace = Get-WmiObject win32_logicaldisk | 
+    $pDriveSpace = Get-CimInstance win32_logicaldisk | 
                         where { $_.DeviceID -eq $DriveLetter } |
                         select -expand FreeSpace | %{
                             [math]::Round(( $_ / 1MB),0) 
