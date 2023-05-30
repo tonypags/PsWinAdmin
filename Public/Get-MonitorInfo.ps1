@@ -4,7 +4,7 @@ function Get-MonitorInfo {
     .SYNOPSIS
     Returns Monitor/LCD information.
     .DESCRIPTION
-    Returns Monitor/LCD information via WMI.
+    Returns Monitor/LCD information via CIM.
     .EXAMPLE
     Get-MonitorInfo | Select-Object -ExpandProperty SerialNumberID
     #>
