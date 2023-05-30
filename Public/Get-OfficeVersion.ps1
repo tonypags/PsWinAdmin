@@ -64,28 +64,32 @@ Function Get-OfficeVersion {
      $MSexceptionList = "mui","visio","project","proofing","visual"
     
      foreach ($computer in $ComputerName) {
-        if ($Credentials) {
-           $os=Get-CimInstance win32_operatingsystem -computername $computer -Credential $Credentials
-        } else {
-           $os=Get-CimInstance win32_operatingsystem -computername $computer
-        }
-    
-        $osArchitecture = $os.OSArchitecture
-    
-        if ($Credentials) {
-           $regProv = Get-CimInstance -list "StdRegProv" -namespace root\default -computername $computer -Credential $Credentials
-        } else {
-           $regProv = Get-CimInstance -list "StdRegProv" -namespace root\default -computername $computer
-        }
-    
-        [System.Collections.ArrayList]$VersionList = New-Object -TypeName System.Collections.ArrayList
-        [System.Collections.ArrayList]$PathList = New-Object -TypeName System.Collections.ArrayList
-        [System.Collections.ArrayList]$PackageList = New-Object -TypeName System.Collections.ArrayList
-        [System.Collections.ArrayList]$ClickToRunPathList = New-Object -TypeName System.Collections.ArrayList
-        [System.Collections.ArrayList]$ConfigItemList = New-Object -TypeName  System.Collections.ArrayList
-        $ClickToRunList = new-object PSObject[] 0;
-    
-        foreach ($regKey in $officeKeys) {
+
+         Try {
+            $cimSession = if ($Credentials) {
+               New-CimSession -ComputerName $computer -Credential $Credentials -ea Stop
+            } else {
+               New-CimSession -ComputerName $computer -ea Stop
+            }
+         } Catch {
+            Write-Error "Could not connect to $computer. $($_.Exception.Message)"
+            continue
+         }
+
+         $os=Get-CimInstance win32_operatingsystem -CimSession $cimSession
+         $regProv = Get-CimInstance -list "StdRegProv" -namespace root\default -CimSession $cimSession
+         $cimSession | Remove-CimSession -Confirm:$false
+
+         $osArchitecture = $os.OSArchitecture
+
+         [System.Collections.ArrayList]$VersionList = New-Object -TypeName System.Collections.ArrayList
+         [System.Collections.ArrayList]$PathList = New-Object -TypeName System.Collections.ArrayList
+         [System.Collections.ArrayList]$PackageList = New-Object -TypeName System.Collections.ArrayList
+         [System.Collections.ArrayList]$ClickToRunPathList = New-Object -TypeName System.Collections.ArrayList
+         [System.Collections.ArrayList]$ConfigItemList = New-Object -TypeName  System.Collections.ArrayList
+         $ClickToRunList = new-object PSObject[] 0;
+
+         foreach ($regKey in $officeKeys) {
            $officeVersion = $regProv.EnumKey($HKLM, $regKey)
            foreach ($key in $officeVersion.sNames) {
               if ($key -match "\d{2}\.\d") {
@@ -303,9 +307,8 @@ Function Get-OfficeVersion {
                $results += $object
     
             }
-        }
+         }
       }
-    
       $results = Get-Unique -InputObject $results 
     
       return $results;

@@ -207,11 +207,18 @@ function Find-DomainAdminServicesAndTasks {
             If ( Test-Connection $Device -Count 2 -ErrorAction SilentlyContinue) {
                 Write-Verbose "Checking connectivity..."
             
+                Try {
+                    $cimSession = New-CimSession -ComputerName $Device -ea Stop
+                } Catch {
+                    Write-Error "Could not connect to $Device. $($_.Exception.Message)"
+                    continue
+                }
+
                 # Check services
                 $errService = $null
                 $ServiceSplat = @{
                     Class = 'win32_service'
-                    ComputerName = $Device
+                    CimSession = $CimSession
                     ErrorAction = 'SilentlyContinue'
                     ErrorVariable = 'errService'
                 }
@@ -282,6 +289,8 @@ function Find-DomainAdminServicesAndTasks {
                         New-Object PSObject -Property $Props
                     }# ForEach ($Task in @($Tasks)) 
                 }# if($Tasks)
+
+                $cimSession | Remove-CimSession -Confirm:$false
             }
             Else {
                 # Test-Connection failed

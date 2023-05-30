@@ -109,7 +109,14 @@ Process {
 	    $CBSRebootPend = $null
 						
 	    ## Querying WMI for build version
-	    $WMI_OS = Get-CimInstance -Class Win32_OperatingSystem -Property BuildNumber, CSName -ComputerName $Computer -ErrorAction Stop
+		Try {
+			$cimSession = New-CimSession -ComputerName $Computer -ea Stop
+		} Catch {
+			Write-Error "Could not connect to $Computer. $($_.Exception.Message)"
+			continue
+		}
+	    $WMI_OS = Get-CimInstance -Class Win32_OperatingSystem -Property BuildNumber, CSName -CimSession $cimSession -ErrorAction Stop
+		$cimSession | Remove-CimSession -Confirm:$false
 
 	    ## Making registry connection to the local/remote computer
 	    $HKLM = [UInt32] "0x80000002"
