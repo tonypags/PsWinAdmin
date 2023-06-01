@@ -5,9 +5,10 @@ function Get-PendingRebootCIM {
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
+        [Parameter()]
+        [ValidateNotNull()]
         [Microsoft.Management.Infrastructure.CimSession]
-        $CimSession
+        $CimSession=(New-CimSession -ComputerName 'localhost')
     )
 
     ## Querying WMI for build version
@@ -39,7 +40,6 @@ function Get-PendingRebootCIM {
         }
         $cimProps.MethodName = 'EnumKey'
         $ReturnValue = (Invoke-CimMethod @cimProps -Arguments $Arguments).ReturnValue
-        Test-ReturnValue -ReturnValue $ReturnValue
         $CBSRebootPend = if ($ReturnValue -eq 2) {
             $false
         } elseif ($ReturnValue -eq 1) {
