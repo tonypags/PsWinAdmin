@@ -19,16 +19,9 @@ Describe 'PsWinAdmin Tests' {
         It 'Ensures module is imported' {
             $script:thisModule.Name | Should -Be 'PsWinAdmin'
         }
-
     }
 
     Context 'Test PsWinAdmin Functions' {
-
-        BeforeAll {
-            $script:info = Get-SeasonInfo
-            $script:year = $script:info.SeasonYear
-            $script:Sched = Get-GsisScheduleApi
-        }
 
         # Remove the tested item from the initial array
         AfterEach {
@@ -53,7 +46,6 @@ Describe 'PsWinAdmin Tests' {
 
             $script:thisName = 'Format-Json'
         }
-
     }
 
     Context 'Clean up' {
@@ -61,7 +53,5 @@ Describe 'PsWinAdmin Tests' {
         It 'Ensures all public functions have tests' {
             $script:funcNames | Should -BeNullOrEmpty
         }
-        
     }
-
 }
