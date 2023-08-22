@@ -76,12 +76,13 @@ function Write-Log
         }
 
         # Build the string, starting with the date and type
+        $lclDomain = (Get-WmiObject Win32_ComputerSystem).Domain
         [string]$strContent = $null
         $strContent = $strContent + "$((Get-Date).ToString($TimestampFormat)) "
         $strContent = $strContent + "[$($EntryType)]: "
-        $strContent = $strContent + $env:USERNAME + '@'
+        $strContent = $strContent + (whoami) + '@'
         $strContent = $strContent + $env:COMPUTERNAME + '.'
-        $strContent = $strContent + $env:USERDNSDOMAIN + ' '
+        $strContent = $strContent + $lclDomain + ' '
         $strContent = $strContent + $Content
 
         # Add Content to the file.
