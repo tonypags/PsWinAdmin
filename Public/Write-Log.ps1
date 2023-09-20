@@ -76,7 +76,7 @@ function Write-Log
         }
 
         # Build the string, starting with the date and type
-        $lclDomain = (Get-WmiObject Win32_ComputerSystem).Domain
+        $lclDomain = (Get-CimInstance Win32_ComputerSystem).Domain
         [string]$strContent = $null
         $strContent = $strContent + "$((Get-Date).ToString($TimestampFormat)) "
         $strContent = $strContent + "[$($EntryType)]: "
