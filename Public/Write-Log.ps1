@@ -63,6 +63,10 @@ function Write-Log
 
        [Parameter()]
        [switch]
+       $Quiet,
+
+       [Parameter()]
+       [switch]
        $PassHost
     )
 
@@ -98,9 +102,8 @@ function Write-Log
 
         } Catch {
             
-            if(!$WriteLogErrorHappened){
-                Write-Host "Logging error:" -ForegroundColor Gray
-                Write-Host "$($LogError.ErrorRecord)`n" -ForegroundColor DarkCyan
+            if (-not $Quiet -and -not $WriteLogErrorHappened) {
+                Write-Error "Logging error: $($LogError.ErrorRecord)`n"
                 Set-Variable -Name 'WriteLogErrorHappened' -Scope Global -Value $true
             }
         }
