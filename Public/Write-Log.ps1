@@ -79,8 +79,14 @@ function Write-Log
                 Out-Null
         }
 
+        # Find the local domain
+        $lclDomain = Try {
+            (Get-CimInstance Win32_ComputerSystem -ea Stop).Domain.ToUpper()
+        } Catch {
+            $env:USERDNSDOMAIN
+        }
+
         # Build the string, starting with the date and type
-        $lclDomain = (Get-CimInstance Win32_ComputerSystem).Domain
         [string]$strContent = $null
         $strContent = $strContent + "$((Get-Date).ToString($TimestampFormat)) "
         $strContent = $strContent + "[$($EntryType)]: "
@@ -95,16 +101,14 @@ function Write-Log
                 Value = $strContent
                 Path = $FilePath
                 Force = $true
-                ErrorAction = 'Stop'
-                ErrorVariable = 'LogError'
             }
-            Add-Content @Splat
+            Add-Content @Splat -ea Stop -ev LogError
 
         } Catch {
             
             if (-not $Quiet -and -not $WriteLogErrorHappened) {
                 Write-Error "Logging error: $($LogError.ErrorRecord)`n"
-                Set-Variable -Name 'WriteLogErrorHappened' -Scope Global -Value $true
+                Set-Variable -Name 'WriteLogErrorHappened' -Scope Global -Value $true # prevents multiple errors
             }
         }
 
