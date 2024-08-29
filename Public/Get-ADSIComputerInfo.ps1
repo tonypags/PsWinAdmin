@@ -73,6 +73,6 @@ function Get-ADSIComputerInfo {
         }
         New-Object -TypeName PSObject -Property $props
     }
-    Write-Verbose "$((Get-Date).ToLongTimeString()):  $(@($Result).count) objects returned from ADSI search"
+    Write-Verbose "$((Get-Date).ToLongTimeString()):  $(($Result|Measure-Object).Count) objects returned from ADSI search"
     Write-Output $Result
 }
