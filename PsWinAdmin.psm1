@@ -8,3 +8,4 @@ $Private = Get-ChildItem $PSScriptRoot\Private\*.ps1 -ea 0
 Foreach ($File in $Private) {
     . $File.FullName
 }
+Remove-Variable 'File','foreach','Public','Private' -ea:ignore
