@@ -393,7 +393,7 @@ $MailSplat.Body = $EmailBody + (Get-MyEmailSignature) + $ScriptInfo
 if ($Attachments) {$MailSplat.Attachments = $Attachments}
 $MailSplat.Priority = 'Normal' # High|Normal|Low
 
-$msg = "[$(Get-Date)] Sending email with subject '$($MailSplat.Subject)' to $($MailSplat.To -join '; ')"
+$msg = "[$(Get-Date)] Sending email with subject '$($MailSplat.Subject)' to $($MailSplat.To -join '; ') & cc $($MailSplat.Cc -join '; ') & bcc $($MailSplat.Bcc -join '; ')"
 if ($Environment -eq 'dev') {Write-Debug $msg -Debug} else {Write-Host $msg}
 Send-MailMessage @MailSplat
 
